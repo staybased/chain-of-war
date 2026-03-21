@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chain of War - Tournament Conquest</title>
+    <link rel="stylesheet" href="design-system.css">
+    <style>
+        body {
+            background: #050510;
+            background-image: 
+                radial-gradient(circle at 15% 25%, rgba(255, 179, 0, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 85% 75%, rgba(255, 179, 0, 0.06) 0%, transparent 50%),
+                radial-gradient(circle at 50% 10%, rgba(0, 229, 255, 0.05) 0%, transparent 60%);
+            animation: goldParticles 20s ease-in-out infinite;
+        }
+
+        @keyframes goldParticles {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.85; }
+        }
+
+        .tournament-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .tournament-title {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: var(--cow-gold);
+            text-shadow: 0 0 20px var(--cow-gold-glow);
+            margin: 0 20px;
+        }
+
+        .tournament-logo {
+            width: 80px;
+            height: 80px;
+            filter: drop-shadow(0 0 15px var(--cow-gold-glow));
+        }
+
+        .balance-display {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--cow-bg-panel);
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 2px solid var(--cow-gold);
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--cow-gold);
+            z-index: 1000;
+        }
+
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .tournament-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .tournament-card {
+            background: var(--cow-bg-card);
+            border: 2px solid var(--cow-gold-dim);
+            border-radius: 15px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tournament-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--cow-gold), var(--cow-cyan), var(--cow-gold));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .tournament-card:hover {
+            border-color: var(--cow-gold);
+            box-shadow: 0 8px 30px var(--cow-gold-glow);
+            transform: translateY(-3px);
+        }
+
+        .tournament-card:hover::before {
+            opacity: 1;
+        }
+
+        .tournament-name {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: var(--cow-gold);
+            margin-bottom: 15px;
+        }
+
+        .tournament-details {
+            display: grid;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .tournament-detail {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.95em;
+        }
+
+        .detail-label {
+            color: var(--cow-text-dim);
+        }
+
+        .detail-value {
+            color: var(--cow-text-bright);
+            font-weight: bold;
+        }
+
+        .prize-split {
+            background: var(--cow-bg-deep);
+            padding: 10px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 0.85em;
+        }
+
+        .burned-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--cow-red);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .tournament-timer {
+            font-size: 1.1em;
+            color: var(--cow-cyan);
+            font-weight: bold;
+            text-align: center;
+            margin: 15px 0;
+        }
+
+        .join-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--cow-gold), #FFB300);
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .join-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px var(--cow-gold-glow);
+        }
+
+        .join-btn:disabled {
+            background: #444;
+            color: #777;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .bracket-view, .match-view, .results-view, .history-view {
+            display: none;
+        }
+
+        .bracket-container {
+            background: var(--cow-bg-card);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+
+        .bracket {
+            display: flex;
+            gap: 50px;
+            min-width: 800px;
+            justify-content: center;
+        }
+
+        .bracket-round {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .bracket-match {
+            background: var(--cow-bg-panel);
+            border: 2px solid var(--cow-gold-dim);
+            border-radius: 10px;
+            padding: 15px;
+            min-width: 150px;
+            text-align: center;
+            position: relative;
+        }
+
+        .bracket-match.current {
+            border-color: var(--cow-cyan);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 var(--cow-cyan-glow); }
+            50% { box-shadow: 0 0 0 10px transparent; }
+        }
+
+        .bracket-match.completed {
+            border-color: var(--cow-green);
+        }
+
+        .bracket-player {
+            padding: 8px;
+            margin: 3px 0;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+
+        .bracket-player.winner {
+            background: var(--cow-green-dim);
+            color: var(--cow-green);
+            font-weight: bold;
+        }
+
+        .bracket-player.loser {
+            background: var(--cow-red-dim);
+            color: var(--cow-red);
+            text-decoration: line-through;
+        }
+
+        .bracket-player.you {
+            background: var(--cow-cyan-dim);
+            color: var(--cow-cyan);
+            font-weight: bold;
+        }
+
+        .match-arena {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            align-items: center;
+            margin: 40px 0;
+        }
+
+        .army-display {
+            background: var(--cow-bg-card);
+            border: 2px solid var(--cow-gold-dim);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            min-width: 250px;
+        }
+
+        .army-faction {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 15px;
+            border-radius: 50%;
+            background: var(--cow-bg-deep);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+        }
+
+        .vs-indicator {
+            font-size: 3em;
+            color: var(--cow-gold);
+            font-weight: bold;
+            text-shadow: 0 0 20px var(--cow-gold-glow);
+        }
+
+        .fight-btn {
+            padding: 20px 40px;
+            background: linear-gradient(135deg, var(--cow-red), #FF6B6B);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.3em;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 30px auto;
+            display: block;
+            transition: all 0.3s ease;
+        }
+
+        .fight-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 30px rgba(255, 45, 45, 0.5);
+        }
+
+        .battle-report {
+            background: var(--cow-bg-deep);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+        }
+
+        .result-banner {
+            text-align: center;
+            padding: 40px;
+            margin: 30px 0;
+            border-radius: 15px;
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .result-banner.victory {
+            background: linear-gradient(135deg, var(--cow-green-dim), var(--cow-green));
+            color: var(--cow-green);
+        }
+
+        .result-banner.defeat {
+            background: linear-gradient(135deg, var(--cow-red-dim), var(--cow-red));
+            color: var(--cow-red);
+        }
+
+        .prize-breakdown {
+            background: var(--cow-bg-card);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .history-table th,
+        .history-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--cow-gold-dim);
+        }
+
+        .history-table th {
+            background: var(--cow-bg-panel);
+            color: var(--cow-gold);
+            font-weight: bold;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            justify-content: center;
+        }
+
+        .nav-tab {
+            padding: 12px 25px;
+            background: var(--cow-bg-panel);
+            border: 2px solid var(--cow-gold-dim);
+            border-radius: 8px;
+            color: var(--cow-text-bright);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tab.active,
+        .nav-tab:hover {
+            border-color: var(--cow-gold);
+            background: var(--cow-gold-dim);
+            color: var(--cow-gold);
+        }
+
+        .back-btn {
+            padding: 12px 25px;
+            background: var(--cow-bg-panel);
+            border: 2px solid var(--cow-cyan);
+            border-radius: 8px;
+            color: var(--cow-cyan);
+            cursor: pointer;
+            margin: 20px 0;
+            display: inline-block;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: var(--cow-cyan-dim);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: var(--cow-bg-panel);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--cow-gold);
+        }
+
+        .stat-label {
+            color: var(--cow-text-dim);
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="balance-display">
+        💰 <span id="warBalance">10,000</span> $WAR
+    </div>
+
+    <!-- Lobby View -->
+    <div class="lobby-view" id="lobbyView">
+        <div class="tournament-header">
+            <img src="assets/logo.png" alt="Chain of War" class="tournament-logo">
+            <h1 class="tournament-title">CHAIN OF WAR — CONQUEST</h1>
+            <img src="assets/logo.png" alt="Chain of War" class="tournament-logo">
+        </div>
+
+        <div class="main-content">
+            <div class="nav-tabs">
+                <div class="nav-tab active" onclick="showTab('lobby')">Tournaments</div>
+                <div class="nav-tab" onclick="showTab('history')">History</div>
+            </div>
+
+            <div class="tournament-grid" id="tournamentGrid">
+                <!-- Tournament cards will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Bracket View -->
+    <div class="bracket-view" id="bracketView">
+        <div class="main-content">
+            <button class="back-btn" onclick="showLobby()">← Back to Tournaments</button>
+            
+            <div class="tournament-header">
+                <h1 class="tournament-title" id="bracketTitle">Tournament Bracket</h1>
+            </div>
+
+            <div class="bracket-container">
+                <div class="bracket" id="bracketDisplay">
+                    <!-- Bracket will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Match View -->
+    <div class="match-view" id="matchView">
+        <div class="main-content">
+            <button class="back-btn" onclick="showBracket()">← Back to Bracket</button>
+            
+            <div class="tournament-header">
+                <h1 class="tournament-title" id="matchTitle">Match Battle</h1>
+            </div>
+
+            <div class="match-arena">
+                <div class="army-display" id="playerArmy">
+                    <div class="army-faction">⚔️</div>
+                    <h3>Your Army</h3>
+                    <p id="playerFaction">Iron Covenant</p>
+                    <p id="playerArmyValue">2,500 $WAR</p>
+                </div>
+                
+                <div class="vs-indicator">VS</div>
+                
+                <div class="army-display" id="enemyArmy">
+                    <div class="army-faction">🛡️</div>
+                    <h3>Enemy Army</h3>
+                    <p id="enemyFaction">Swarm of Xeth</p>
+                    <p id="enemyArmyValue">2,300 $WAR</p>
+                </div>
+            </div>
+
+            <button class="fight-btn" id="fightBtn" onclick="startBattle()">FIGHT!</button>
+
+            <div class="battle-report" id="battleReport" style="display: none;">
+                <!-- Battle narration will appear here -->
+            </div>
+
+            <div id="matchResult" style="display: none;">
+                <!-- Match result will appear here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Results View -->
+    <div class="results-view" id="resultsView">
+        <div class="main-content">
+            <div class="tournament-header">
+                <h1 class="tournament-title">Tournament Complete!</h1>
+            </div>
+
+            <div class="result-banner" id="finalResult">
+                <!-- Final placement will appear here -->
+            </div>
+
+            <div class="bracket-container">
+                <div class="bracket" id="finalBracket">
+                    <!-- Final bracket will be populated -->
+                </div>
+            </div>
+
+            <div class="prize-breakdown" id="prizeInfo">
+                <!-- Prize information will appear here -->
+            </div>
+
+            <button class="fight-btn" onclick="showLobby()">ENTER ANOTHER TOURNAMENT</button>
+        </div>
+    </div>
+
+    <!-- History View -->
+    <div class="history-view" id="historyView">
+        <div class="main-content">
+            <div class="tournament-header">
+                <h1 class="tournament-title">Tournament History</h1>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalTournaments">0</div>
+                    <div class="stat-label">Tournaments Entered</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="winRate">0%</div>
+                    <div class="stat-label">Win Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalEarnings">0</div>
+                    <div class="stat-label">Total Earnings</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="roi">0%</div>
+                    <div class="stat-label">ROI</div>
+                </div>
+            </div>
+
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Tournament</th>
+                        <th>Placement</th>
+                        <th>Entry Fee</th>
+                        <th>Prize</th>
+                        <th>Net</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTableBody">
+                    <!-- History entries will be populated -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="nav.js"></script>
+    <script>
+        // Game State
+        let gameState = {
+            balance: parseInt(localStorage.getItem('cow_war_balance')) || 10000,
+            currentTournament: null,
+            currentMatch: null,
+            bracket: null,
+            history: JSON.parse(localStorage.getItem('cow_tournament_history')) || []
+        };
+
+        // Tournament definitions
+        const tournaments = [
+            {
+                id: 'casual',
+                name: 'Casual Clash',
+                players: 8,
+                entryFee: 100,
+                prizePool: 560,
+                timeToStart: 300, // 5 minutes
+                description: '8 players, 100 $WAR entry, 560 $WAR prize pool'
+            },
+            {
+                id: 'ranked',
+                name: 'Ranked Arena', 
+                players: 16,
+                entryFee: 500,
+                prizePool: 5600,
+                timeToStart: 600, // 10 minutes
+                description: '16 players, 500 $WAR entry, 5,600 $WAR prize pool'
+            },
+            {
+                id: 'championship',
+                name: 'Championship',
+                players: 32,
+                entryFee: 2000,
+                prizePool: 44800,
+                timeToStart: 900, // 15 minutes
+                description: '32 players, 2,000 $WAR entry, 44,800 $WAR prize pool'
+            },
+            {
+                id: 'grand',
+                name: 'Grand War',
+                players: 64,
+                entryFee: 5000,
+                prizePool: 224000,
+                timeToStart: 1200, // 20 minutes
+                description: '64 players, 5,000 $WAR entry, 224,000 $WAR prize pool'
+            }
+        ];
+
+        // Faction data
+        const factions = [
+            { name: 'Iron Covenant', symbol: '⚔️', color: '#B87333' },
+            { name: 'Swarm of Xeth', symbol: '🐛', color: '#C6FF00' },
+            { name: 'Void Pharaohs', symbol: '💀', color: '#FFB300' },
+            { name: 'Emerald Tide', symbol: '🔥', color: '#FFD600' },
+            { name: 'Celestial Order', symbol: '🛡️', color: '#00BFA5' },
+            { name: 'Warp Touched', symbol: '👁️', color: '#E91E63' },
+            { name: 'Shadow Kin', symbol: '🗡️', color: '#9C27B0' },
+            { name: 'Steel Legion', symbol: '🤖', color: '#607D8B' },
+            { name: 'Bone Prophets', symbol: '💜', color: '#673AB7' },
+            { name: 'Apex Hunters', symbol: '🦎', color: '#795548' }
+        ];
+
+        // Audio context for sound effects
+        let audioContext;
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(frequency, duration, type = 'sine') {
+            initAudio();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+            oscillator.type = type;
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration);
+        }
+
+        function playTournamentHorn() {
+            playSound(220, 0.5, 'triangle');
+            setTimeout(() => playSound(330, 0.5, 'triangle'), 200);
+            setTimeout(() => playSound(440, 0.8, 'triangle'), 400);
+        }
+
+        function playCrowdRoar() {
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    playSound(80 + Math.random() * 40, 0.3, 'sawtooth');
+                }, i * 100);
+            }
+        }
+
+        function playDefeatSound() {
+            playSound(220, 0.3, 'sine');
+            setTimeout(() => playSound(165, 0.3, 'sine'), 300);
+            setTimeout(() => playSound(110, 0.8, 'sine'), 600);
+        }
+
+        // Initialize the page
+        function init() {
+            updateBalance();
+            renderTournaments();
+            renderHistory();
+            
+            // Start timers
+            setInterval(updateTimers, 1000);
+        }
+
+        function updateBalance() {
+            document.getElementById('warBalance').textContent = gameState.balance.toLocaleString();
+            localStorage.setItem('cow_war_balance', gameState.balance);
+        }
+
+        function renderTournaments() {
+            const grid = document.getElementById('tournamentGrid');
+            grid.innerHTML = '';
+
+            tournaments.forEach(tournament => {
+                const card = document.createElement('div');
+                card.className = 'tournament-card';
+                
+                const firstPlace = Math.floor(tournament.prizePool * 0.5);
+                const secondPlace = Math.floor(tournament.prizePool * 0.3);
+                const thirdPlace = Math.floor(tournament.prizePool * 0.2);
+
+                card.innerHTML = `
+                    <div class="burned-badge">20% BURNED</div>
+                    <div class="tournament-name">${tournament.name}</div>
+                    <div class="tournament-details">
+                        <div class="tournament-detail">
+                            <span class="detail-label">Players:</span>
+                            <span class="detail-value">${tournament.players}</span>
+                        </div>
+                        <div class="tournament-detail">
+                            <span class="detail-label">Entry Fee:</span>
+                            <span class="detail-value">${tournament.entryFee} $WAR</span>
+                        </div>
+                        <div class="tournament-detail">
+                            <span class="detail-label">Prize Pool:</span>
+                            <span class="detail-value">${tournament.prizePool.toLocaleString()} $WAR</span>
+                        </div>
+                    </div>
+                    <div class="prize-split">
+                        🏆 1st: ${firstPlace.toLocaleString()} $WAR (50%)<br>
+                        🥈 2nd: ${secondPlace.toLocaleString()} $WAR (30%)<br>
+                        🥉 3rd: ${thirdPlace.toLocaleString()} $WAR (20%)
+                    </div>
+                    <div class="tournament-timer" id="timer-${tournament.id}">
+                        Starts in: 05:00
+                    </div>
+                    <button class="join-btn" 
+                            onclick="joinTournament('${tournament.id}')"
+                            ${gameState.balance < tournament.entryFee ? 'disabled' : ''}>
+                        ${gameState.balance < tournament.entryFee ? 'INSUFFICIENT FUNDS' : 'JOIN TOURNAMENT'}
+                    </button>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        function updateTimers() {
+            tournaments.forEach(tournament => {
+                const timer = document.getElementById(`timer-${tournament.id}`);
+                if (timer) {
+                    tournament.timeToStart = Math.max(0, tournament.timeToStart - 1);
+                    const minutes = Math.floor(tournament.timeToStart / 60);
+                    const seconds = tournament.timeToStart % 60;
+                    timer.textContent = `Starts in: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    
+                    if (tournament.timeToStart === 0) {
+                        timer.textContent = "Starting...";
+                        timer.style.color = 'var(--cow-red)';
+                    }
+                }
+            });
+        }
+
+        function joinTournament(tournamentId) {
+            const tournament = tournaments.find(t => t.id === tournamentId);
+            if (!tournament || gameState.balance < tournament.entryFee) return;
+
+            // Deduct entry fee
+            gameState.balance -= tournament.entryFee;
+            updateBalance();
+
+            // Set current tournament
+            gameState.currentTournament = tournament;
+
+            // Play tournament horn
+            playTournamentHorn();
+
+            // Generate bracket
+            generateBracket(tournament);
+            
+            // Show bracket view
+            showBracket();
+        }
+
+        function generateBracket(tournament) {
+            const playerNames = generatePlayerNames(tournament.players - 1); // -1 because player is included
+            playerNames.unshift("You");
+            
+            // Shuffle players
+            for (let i = playerNames.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [playerNames[i], playerNames[j]] = [playerNames[j], playerNames[i]];
+            }
+
+            gameState.bracket = createTournamentBracket(playerNames);
+            gameState.currentMatch = null;
+            
+            // Find player's first match
+            findNextMatch();
+        }
+
+        function generatePlayerNames(count) {
+            const prefixes = ['Commander', 'Captain', 'General', 'Marshal', 'Warlord', 'Lord', 'Baron', 'Duke', 'Admiral', 'Colonel'];
+            const names = ['Zero', 'Prime', 'Alpha', 'Beta', 'Gamma', 'Delta', 'Omega', 'Nova', 'Vex', 'Zara', 'Kex', 'Rex', 'Dex', 'Max', 'Jax', 'Blaze', 'Storm', 'Void', 'Shadow', 'Phoenix'];
+            const suffixes = ['', 'X', 'Prime', 'Alpha', 'Beta', '007', '101', '256', 'Max', 'Pro'];
+
+            const playerNames = [];
+            for (let i = 0; i < count; i++) {
+                const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+                const name = names[Math.floor(Math.random() * names.length)];
+                const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
+                playerNames.push(prefix + name + suffix);
+            }
+            return playerNames;
+        }
+
+        function createTournamentBracket(players) {
+            const bracket = {
+                rounds: [],
+                currentRound: 0
+            };
+
+            let currentPlayers = [...players];
+            let roundNum = 1;
+
+            while (currentPlayers.length > 1) {
+                const matches = [];
+                const nextRoundPlayers = [];
+
+                for (let i = 0; i < currentPlayers.length; i += 2) {
+                    const match = {
+                        id: `r${roundNum}m${Math.floor(i/2) + 1}`,
+                        player1: currentPlayers[i],
+                        player2: currentPlayers[i + 1] || 'BYE',
+                        winner: null,
+                        completed: false
+                    };
+
+                    // Auto-advance bye matches
+                    if (match.player2 === 'BYE') {
+                        match.winner = match.player1;
+                        match.completed = true;
+                        nextRoundPlayers.push(match.player1);
+                    } else {
+                        matches.push(match);
+                    }
+                }
+
+                bracket.rounds.push({
+                    roundNumber: roundNum,
+                    matches: matches,
+                    name: getRoundName(roundNum, currentPlayers.length)
+                });
+
+                // Simulate non-player matches
+                matches.forEach(match => {
+                    if (match.player1 !== 'You' && match.player2 !== 'You' && !match.completed) {
+                        // Auto-simulate AI vs AI matches
+                        const winner = Math.random() > 0.5 ? match.player1 : match.player2;
+                        match.winner = winner;
+                        match.completed = true;
+                        nextRoundPlayers.push(winner);
+                    }
+                });
+
+                currentPlayers = nextRoundPlayers;
+                roundNum++;
+            }
+
+            return bracket;
+        }
+
+        function getRoundName(roundNum, totalPlayers) {
+            if (totalPlayers <= 2) return 'FINAL';
+            if (totalPlayers <= 4) return 'SEMI-FINAL';
+            if (totalPlayers <= 8) return 'QUARTER-FINAL';
+            return `ROUND ${roundNum}`;
+        }
+
+        function findNextMatch() {
+            for (let round of gameState.bracket.rounds) {
+                for (let match of round.matches) {
+                    if (!match.completed && (match.player1 === 'You' || match.player2 === 'You')) {
+                        gameState.currentMatch = { round: round, match: match };
+                        return;
+                    }
+                }
+            }
+            
+            // No more matches for player - tournament complete
+            gameState.currentMatch = null;
+            showResults();
+        }
+
+        function showTab(tab) {
+            // Update tab buttons
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Show content
+            if (tab === 'lobby') {
+                showLobby();
+            } else if (tab === 'history') {
+                showHistoryView();
+            }
+        }
+
+        function showLobby() {
+            document.querySelectorAll('.lobby-view, .bracket-view, .match-view, .results-view, .history-view')
+                .forEach(view => view.style.display = 'none');
+            document.getElementById('lobbyView').style.display = 'block';
+        }
+
+        function showBracket() {
+            document.querySelectorAll('.lobby-view, .bracket-view, .match-view, .results-view, .history-view')
+                .forEach(view => view.style.display = 'none');
+            document.getElementById('bracketView').style.display = 'block';
+            
+            document.getElementById('bracketTitle').textContent = gameState.currentTournament.name;
+            renderBracket();
+        }
+
+        function showMatch() {
+            document.querySelectorAll('.lobby-view, .bracket-view, .match-view, .results-view, .history-view')
+                .forEach(view => view.style.display = 'none');
+            document.getElementById('matchView').style.display = 'block';
+            
+            setupMatchView();
+        }
+
+        function showResults() {
+            document.querySelectorAll('.lobby-view, .bracket-view, .match-view, .results-view, .history-view')
+                .forEach(view => view.style.display = 'none');
+            document.getElementById('resultsView').style.display = 'block';
+            
+            setupResultsView();
+        }
+
+        function showHistoryView() {
+            document.querySelectorAll('.lobby-view, .bracket-view, .match-view, .results-view, .history-view')
+                .forEach(view => view.style.display = 'none');
+            document.getElementById('historyView').style.display = 'block';
+        }
+
+        function renderBracket() {
+            const container = document.getElementById('bracketDisplay');
+            container.innerHTML = '';
+
+            if (!gameState.bracket) return;
+
+            gameState.bracket.rounds.forEach((round, roundIndex) => {
+                const roundDiv = document.createElement('div');
+                roundDiv.className = 'bracket-round';
+                roundDiv.innerHTML = `<h3 style="color: var(--cow-gold); text-align: center; margin-bottom: 20px;">${round.name}</h3>`;
+
+                round.matches.forEach(match => {
+                    const matchDiv = document.createElement('div');
+                    matchDiv.className = 'bracket-match';
+                    
+                    if (match === gameState.currentMatch?.match) {
+                        matchDiv.classList.add('current');
+                    } else if (match.completed) {
+                        matchDiv.classList.add('completed');
+                    }
+
+                    const player1Class = getPlayerClass(match.player1, match.winner);
+                    const player2Class = getPlayerClass(match.player2, match.winner);
+
+                    matchDiv.innerHTML = `
+                        <div class="bracket-player ${player1Class}">${match.player1}</div>
+                        <div class="bracket-player ${player2Class}">${match.player2}</div>
+                    `;
+
+                    // Add click handler for player matches
+                    if (!match.completed && (match.player1 === 'You' || match.player2 === 'You')) {
+                        matchDiv.style.cursor = 'pointer';
+                        matchDiv.onclick = () => showMatch();
+                    }
+
+                    roundDiv.appendChild(matchDiv);
+                });
+
+                container.appendChild(roundDiv);
+            });
+        }
+
+        function getPlayerClass(player, winner) {
+            let classes = [];
+            
+            if (player === 'You') {
+                classes.push('you');
+            }
+            
+            if (winner) {
+                if (player === winner) {
+                    classes.push('winner');
+                } else {
+                    classes.push('loser');
+                }
+            }
+            
+            return classes.join(' ');
+        }
+
+        function setupMatchView() {
+            if (!gameState.currentMatch) return;
+
+            const { round, match } = gameState.currentMatch;
+            document.getElementById('matchTitle').textContent = 
+                `${round.name} — ${match.id.toUpperCase()}: You vs. ${match.player1 === 'You' ? match.player2 : match.player1}`;
+
+            // Setup army displays
+            const playerFaction = factions[Math.floor(Math.random() * factions.length)];
+            const enemyFaction = factions[Math.floor(Math.random() * factions.length)];
+
+            document.getElementById('playerFaction').textContent = playerFaction.name;
+            document.getElementById('enemyFaction').textContent = enemyFaction.name;
+            
+            const playerArmy = Math.floor(1500 + Math.random() * 2000);
+            const enemyArmy = Math.floor(1500 + Math.random() * 2000);
+            
+            document.getElementById('playerArmyValue').textContent = `${playerArmy.toLocaleString()} $WAR`;
+            document.getElementById('enemyArmyValue').textContent = `${enemyArmy.toLocaleString()} $WAR`;
+
+            // Store army values for battle
+            gameState.currentMatch.playerArmy = playerArmy;
+            gameState.currentMatch.enemyArmy = enemyArmy;
+            gameState.currentMatch.playerFaction = playerFaction;
+            gameState.currentMatch.enemyFaction = enemyFaction;
+
+            // Reset battle UI
+            document.getElementById('battleReport').style.display = 'none';
+            document.getElementById('matchResult').style.display = 'none';
+            document.getElementById('fightBtn').style.display = 'block';
+            document.getElementById('battleReport').innerHTML = '';
+        }
+
+        function startBattle() {
+            document.getElementById('fightBtn').style.display = 'none';
+            document.getElementById('battleReport').style.display = 'block';
+            
+            const report = document.getElementById('battleReport');
+            report.innerHTML = '';
+
+            // Battle simulation
+            const { playerArmy, enemyArmy, match, playerFaction, enemyFaction } = gameState.currentMatch;
+            
+            const playerRoll = Math.floor(Math.random() * 100) + 1;
+            const enemyRoll = Math.floor(Math.random() * 100) + 1;
+            
+            const playerTotal = playerRoll + (playerArmy * 2 / 1000); // Scale army value
+            const enemyTotal = enemyRoll + (enemyArmy * 2 / 1000);
+
+            // Battle narration
+            const narration = [
+                `⚔️ BATTLE COMMENCES ⚔️`,
+                `${playerFaction.name} forces deploy across the battlefield...`,
+                `${enemyFaction.name} armies take defensive positions...`,
+                '',
+                `📊 COMBAT CALCULATIONS:`,
+                `Your roll: ${playerRoll} + army modifier: ${Math.floor(playerArmy * 2 / 1000)} = ${Math.floor(playerTotal)}`,
+                `Enemy roll: ${enemyRoll} + army modifier: ${Math.floor(enemyArmy * 2 / 1000)} = ${Math.floor(enemyTotal)}`,
+                '',
+                '💥 BATTLE UNFOLDS:',
+                'Initial volleys exchanged...',
+                'Heavy fighting across the front lines...',
+                'Tactical maneuvers executed...',
+                'Critical engagement point reached...',
+                ''
+            ];
+
+            let index = 0;
+            const interval = setInterval(() => {
+                if (index < narration.length) {
+                    const line = document.createElement('div');
+                    line.textContent = narration[index];
+                    if (narration[index].includes('⚔️') || narration[index].includes('💥')) {
+                        line.style.color = 'var(--cow-gold)';
+                        line.style.fontWeight = 'bold';
+                    }
+                    report.appendChild(line);
+                    report.scrollTop = report.scrollHeight;
+                    index++;
+                } else {
+                    clearInterval(interval);
+                    resolveBattle(playerTotal > enemyTotal);
+                }
+            }, 800);
+        }
+
+        function resolveBattle(playerWon) {
+            const report = document.getElementById('battleReport');
+            const { match } = gameState.currentMatch;
+            
+            // Add final result to battle report
+            setTimeout(() => {
+                const resultLine = document.createElement('div');
+                resultLine.style.fontSize = '1.2em';
+                resultLine.style.fontWeight = 'bold';
+                resultLine.style.marginTop = '20px';
+                
+                if (playerWon) {
+                    resultLine.textContent = '🏆 VICTORY! Your forces triumph!';
+                    resultLine.style.color = 'var(--cow-green)';
+                    playCrowdRoar();
+                } else {
+                    resultLine.textContent = '💀 DEFEAT! Your armies fall...';
+                    resultLine.style.color = 'var(--cow-red)';
+                    playDefeatSound();
+                }
+                
+                report.appendChild(resultLine);
+                
+                // Update match
+                match.winner = playerWon ? 'You' : (match.player1 === 'You' ? match.player2 : match.player1);
+                match.completed = true;
+
+                // Show result and advance button
+                setTimeout(() => {
+                    const resultDiv = document.getElementById('matchResult');
+                    resultDiv.style.display = 'block';
+                    
+                    if (playerWon) {
+                        resultDiv.innerHTML = `
+                            <div class="result-banner victory">
+                                🏆 VICTORY! ADVANCING TO NEXT ROUND
+                            </div>
+                            <button class="fight-btn" onclick="advanceToNextRound()">CONTINUE</button>
+                        `;
+                    } else {
+                        const placement = calculateFinalPlacement();
+                        resultDiv.innerHTML = `
+                            <div class="result-banner defeat">
+                                💀 ELIMINATED — Finished ${placement}
+                            </div>
+                            <button class="fight-btn" onclick="showResults()">VIEW FINAL RESULTS</button>
+                        `;
+                    }
+                }, 2000);
+                
+            }, 1500);
+        }
+
+        function advanceToNextRound() {
+            // Simulate remaining AI matches in current round
+            const currentRound = gameState.currentMatch.round;
+            currentRound.matches.forEach(match => {
+                if (!match.completed && match.player1 !== 'You' && match.player2 !== 'You') {
+                    const winner = Math.random() > 0.5 ? match.player1 : match.player2;
+                    match.winner = winner;
+                    match.completed = true;
+                }
+            });
+
+            // Advance winners to next round
+            advanceBracket();
+            
+            // Find next player match
+            findNextMatch();
+            
+            if (gameState.currentMatch) {
+                showBracket();
+            } else {
+                showResults();
+            }
+        }
+
+        function advanceBracket() {
+            // This function would handle advancing winners to the next round
+            // For simplicity, we'll let the bracket generation handle this
+            return;
+        }
+
+        function calculateFinalPlacement() {
+            // Calculate placement based on when player was eliminated
+            const currentRoundNum = gameState.currentMatch.round.roundNumber;
+            const totalPlayers = gameState.currentTournament.players;
+            
+            if (currentRoundNum === 1) {
+                if (totalPlayers >= 32) return 'Top 32';
+                if (totalPlayers >= 16) return 'Top 16';
+                return 'Top 8';
+            } else if (currentRoundNum === 2) {
+                if (totalPlayers >= 16) return 'Top 8';
+                return 'Top 4';
+            } else if (currentRoundNum === 3) {
+                return 'Top 4';
+            } else {
+                return '2nd Place';
+            }
+        }
+
+        function setupResultsView() {
+            // Determine final placement
+            let placement = '🏆 1ST PLACE';
+            let prizeWon = 0;
+            
+            if (!gameState.currentMatch) {
+                // Player won the tournament
+                prizeWon = Math.floor(gameState.currentTournament.prizePool * 0.5);
+            } else {
+                // Player was eliminated
+                placement = calculateFinalPlacement();
+                if (placement.includes('2nd')) {
+                    prizeWon = Math.floor(gameState.currentTournament.prizePool * 0.3);
+                } else if (placement.includes('3rd') || placement.includes('Top 4')) {
+                    prizeWon = Math.floor(gameState.currentTournament.prizePool * 0.2);
+                }
+            }
+
+            // Update balance
+            gameState.balance += prizeWon;
+            updateBalance();
+
+            // Record in history
+            const historyEntry = {
+                date: new Date().toLocaleDateString(),
+                tournament: gameState.currentTournament.name,
+                placement: placement.replace('🏆 ', '').replace('🥈 ', '').replace('🥉 ', ''),
+                entryFee: gameState.currentTournament.entryFee,
+                prize: prizeWon,
+                net: prizeWon - gameState.currentTournament.entryFee
+            };
+            
+            gameState.history.unshift(historyEntry);
+            localStorage.setItem('cow_tournament_history', JSON.stringify(gameState.history));
+
+            // Display results
+            document.getElementById('finalResult').innerHTML = placement;
+            document.getElementById('finalResult').className = `result-banner ${prizeWon > 0 ? 'victory' : 'defeat'}`;
+
+            // Show prize breakdown
+            const prizeInfo = document.getElementById('prizeInfo');
+            prizeInfo.innerHTML = `
+                <h3 style="color: var(--cow-gold); margin-bottom: 15px;">Prize Breakdown</h3>
+                <div class="tournament-details">
+                    <div class="tournament-detail">
+                        <span class="detail-label">Your Placement:</span>
+                        <span class="detail-value">${placement.replace(/[🏆🥈🥉]/g, '').trim()}</span>
+                    </div>
+                    <div class="tournament-detail">
+                        <span class="detail-label">Prize Won:</span>
+                        <span class="detail-value" style="color: var(--cow-green)">${prizeWon.toLocaleString()} $WAR</span>
+                    </div>
+                    <div class="tournament-detail">
+                        <span class="detail-label">Entry Fee:</span>
+                        <span class="detail-value" style="color: var(--cow-red)">-${gameState.currentTournament.entryFee.toLocaleString()} $WAR</span>
+                    </div>
+                    <div class="tournament-detail" style="border-top: 1px solid var(--cow-gold-dim); padding-top: 10px; margin-top: 10px;">
+                        <span class="detail-label"><strong>Net Result:</strong></span>
+                        <span class="detail-value" style="color: ${historyEntry.net >= 0 ? 'var(--cow-green)' : 'var(--cow-red)'}">
+                            ${historyEntry.net >= 0 ? '+' : ''}${historyEntry.net.toLocaleString()} $WAR
+                        </span>
+                    </div>
+                </div>
+            `;
+
+            // Render final bracket
+            renderFinalBracket();
+        }
+
+        function renderFinalBracket() {
+            // Copy bracket rendering logic but show final state
+            renderBracket();
+        }
+
+        function renderHistory() {
+            if (gameState.history.length === 0) return;
+
+            const tbody = document.getElementById('historyTableBody');
+            tbody.innerHTML = '';
+
+            let totalTournaments = gameState.history.length;
+            let wins = gameState.history.filter(h => h.placement.includes('1ST')).length;
+            let totalSpent = gameState.history.reduce((sum, h) => sum + h.entryFee, 0);
+            let totalEarned = gameState.history.reduce((sum, h) => sum + h.prize, 0);
+            let netProfit = totalEarned - totalSpent;
+
+            // Update stats
+            document.getElementById('totalTournaments').textContent = totalTournaments;
+            document.getElementById('winRate').textContent = totalTournaments > 0 ? Math.round((wins / totalTournaments) * 100) + '%' : '0%';
+            document.getElementById('totalEarnings').textContent = netProfit >= 0 ? '+' + netProfit.toLocaleString() : netProfit.toLocaleString();
+            document.getElementById('roi').textContent = totalSpent > 0 ? Math.round((netProfit / totalSpent) * 100) + '%' : '0%';
+
+            // Populate table
+            gameState.history.forEach(entry => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${entry.date}</td>
+                    <td>${entry.tournament}</td>
+                    <td>${entry.placement}</td>
+                    <td>${entry.entryFee.toLocaleString()} $WAR</td>
+                    <td style="color: var(--cow-green)">${entry.prize.toLocaleString()} $WAR</td>
+                    <td style="color: ${entry.net >= 0 ? 'var(--cow-green)' : 'var(--cow-red)'}">
+                        ${entry.net >= 0 ? '+' : ''}${entry.net.toLocaleString()} $WAR
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Initialize when page loads
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
