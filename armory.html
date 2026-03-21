@@ -1,0 +1,2124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chain of War - The Armory</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #050510 0%, #0a0a15 25%, #050510 50%, #0a0a15 75%, #050510 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 30s ease infinite;
+            min-height: 100vh;
+            font-family: 'Arial', sans-serif;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Animated Background */
+        .background-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 25px 25px, rgba(0, 255, 255, 0.02) 2px, transparent 0),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.01) 1px, transparent 1px),
+                linear-gradient(rgba(0, 255, 255, 0.01) 1px, transparent 1px);
+            background-size: 50px 50px, 50px 50px, 50px 50px;
+            z-index: -1;
+            animation: hexFloat 20s ease-in-out infinite;
+        }
+
+        @keyframes hexFloat {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(10px, -5px) rotate(1deg); }
+            66% { transform: translate(-5px, 10px) rotate(-0.5deg); }
+        }
+
+        /* Floating Particles */
+        .particle {
+            position: fixed;
+            width: 2px;
+            height: 2px;
+            background: #FFB300;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1;
+            animation: floatUp 15s linear infinite;
+            opacity: 0;
+        }
+
+        @keyframes floatUp {
+            0% { 
+                transform: translateY(100vh) translateX(0px);
+                opacity: 0;
+            }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { 
+                transform: translateY(-100px) translateX(30px);
+                opacity: 0;
+            }
+        }
+
+        /* Header */
+        .header {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .chain-of-war {
+            font-size: 36px;
+            font-weight: bold;
+            letter-spacing: 10px;
+            color: #00FFFF;
+            text-shadow: 0 0 20px #00FFFF;
+            margin-bottom: 5px;
+        }
+
+        .the-armory {
+            font-size: 14px;
+            letter-spacing: 6px;
+            color: #FFB300;
+            text-shadow: 0 0 10px #FFB300;
+        }
+
+        .search-container {
+            position: relative;
+            width: 300px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            background: #111;
+            border: 2px solid #333;
+            border-radius: 25px;
+            color: #fff;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #00FFFF;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+
+        /* Filter Controls */
+        .filter-controls {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .filter-label {
+            font-size: 12px;
+            color: #aaa;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .filter-pill, .sort-pill {
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            color: #fff;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            opacity: 0.4;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .filter-pill:hover, .sort-pill:hover {
+            opacity: 0.7;
+            transform: translateY(-1px);
+        }
+
+        .filter-pill.active, .sort-pill.active {
+            opacity: 1;
+            background: rgba(0, 255, 255, 0.2);
+            border-color: #00FFFF;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+        }
+
+        .faction-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #666;
+        }
+
+        .army-builder-toggle {
+            padding: 10px 20px;
+            background: linear-gradient(45deg, #4CAF50, #2E7D32);
+            border: none;
+            border-radius: 25px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .army-builder-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        /* Collection Stats */
+        .collection-stats {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(5px);
+            padding: 15px 20px;
+            margin: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00FFFF;
+            font-family: 'Courier', monospace;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .legendary-stat .stat-number {
+            color: #FFB300;
+        }
+
+        /* Card Grid */
+        .card-grid {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Unit Card */
+        .unit-card {
+            width: 180px;
+            height: 270px;
+            background: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 15px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+            position: relative;
+        }
+
+        .unit-card:hover {
+            transform: translateY(-8px) scale(1.03);
+            border-color: #666;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .unit-card.common { border-color: #333; }
+        .unit-card.uncommon { 
+            border-color: #AAA;
+            box-shadow: 0 0 5px rgba(170, 170, 170, 0.3);
+        }
+        .unit-card.rare { 
+            border-color: #2196F3;
+            box-shadow: 0 0 10px rgba(33, 150, 243, 0.4);
+            animation: rarePulse 3s ease-in-out infinite;
+        }
+        .unit-card.epic { 
+            border-color: #9C27B0;
+            box-shadow: 0 0 15px rgba(156, 39, 176, 0.5);
+            animation: epicPulse 2s ease-in-out infinite;
+        }
+        .unit-card.legendary { 
+            border: 2px solid;
+            border-image: conic-gradient(#FFD700, #FFA500, #FFD700, #FFA500) 1;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+            animation: legendaryGlow 2s ease-in-out infinite;
+            position: relative;
+        }
+
+        @keyframes rarePulse {
+            0%, 100% { box-shadow: 0 0 10px rgba(33, 150, 243, 0.4); }
+            50% { box-shadow: 0 0 20px rgba(33, 150, 243, 0.6); }
+        }
+
+        @keyframes epicPulse {
+            0%, 100% { box-shadow: 0 0 15px rgba(156, 39, 176, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(156, 39, 176, 0.7); }
+        }
+
+        @keyframes legendaryGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.6); }
+            50% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.8); }
+        }
+
+        .legendary-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .legendary-particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #FFD700;
+            border-radius: 50%;
+            animation: sparkle 3s linear infinite;
+        }
+
+        @keyframes sparkle {
+            0% {
+                transform: translateY(100%) translateX(0) scale(0);
+                opacity: 0;
+            }
+            10% { opacity: 1; scale: 1; }
+            90% { opacity: 1; scale: 1; }
+            100% {
+                transform: translateY(-20px) translateX(20px) scale(0);
+                opacity: 0;
+            }
+        }
+
+        /* Card Content */
+        .card-header {
+            height: 22px;
+            background: linear-gradient(135deg, #333 0%, #444 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        .card-art {
+            height: 80px;
+            background: linear-gradient(135deg, #333 0%, #555 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .role-icon {
+            font-size: 48px;
+            filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.5));
+        }
+
+        .unit-name {
+            padding: 8px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: bold;
+            color: #fff;
+            border-bottom: 1px solid #444;
+        }
+
+        .stats-section {
+            padding: 8px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .stat-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 10px;
+        }
+
+        .stat-label-card {
+            width: 25px;
+            color: #aaa;
+            font-weight: bold;
+        }
+
+        .stat-visual {
+            flex: 1;
+            height: 3px;
+            background: #333;
+            border-radius: 2px;
+            position: relative;
+        }
+
+        .stat-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00FFFF 0%, #0088CC 100%);
+            border-radius: 2px;
+            transition: width 0.5s ease;
+        }
+
+        .stat-number {
+            width: 15px;
+            color: #fff;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .ability-section {
+            padding: 8px;
+            border-top: 1px solid #444;
+        }
+
+        .ability-name {
+            font-size: 10px;
+            color: #FFB300;
+            font-style: italic;
+            text-align: center;
+        }
+
+        .card-footer {
+            padding: 8px;
+            border-top: 1px solid #444;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .rarity-badge {
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .point-cost {
+            font-size: 12px;
+            font-weight: bold;
+            color: #FFB300;
+        }
+
+        /* Expanded Card Modal - COMPLETELY REWRITTEN */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .expanded-card {
+            width: 500px;
+            max-height: 650px;
+            background: #0D0D0D;
+            background-image: 
+                radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.05) 1px, transparent 0);
+            background-size: 20px 20px;
+            border: 2px solid #444;
+            border-radius: 12px;
+            overflow-y: auto;
+            transform: scale(0.8);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .modal-overlay.active .expanded-card {
+            transform: scale(1);
+        }
+
+        /* Rarity-specific modal styling */
+        .expanded-card.common { 
+            border-color: #444;
+            box-shadow: 0 0 60px rgba(0,0,0,0.8);
+        }
+        .expanded-card.uncommon { 
+            border-color: #AAA;
+            box-shadow: 0 0 60px rgba(0,0,0,0.8), inset 0 0 20px rgba(255,255,255,0.1);
+        }
+        .expanded-card.rare { 
+            border-color: #2196F3;
+            box-shadow: 0 0 60px rgba(0,0,0,0.8), 0 0 20px rgba(33,150,243,0.3);
+        }
+        .expanded-card.epic { 
+            border-color: #9C27B0;
+            box-shadow: 0 0 60px rgba(0,0,0,0.8), 0 0 20px rgba(156,39,176,0.4);
+            animation: epicModalPulse 2s ease-in-out infinite;
+            background-color: rgba(156,39,176,0.03);
+        }
+        .expanded-card.legendary { 
+            border: 2px solid #FFD700;
+            box-shadow: 0 0 60px rgba(0,0,0,0.8), 0 0 40px rgba(255,215,0,0.3);
+            animation: legendaryModalGlow 2s ease-in-out infinite;
+            background-color: rgba(255,215,0,0.02);
+        }
+
+        @keyframes epicModalPulse {
+            0%, 100% { border-color: #9C27B0; }
+            50% { border-color: #E91E63; }
+        }
+
+        @keyframes legendaryModalGlow {
+            0%, 100% { 
+                border-color: #FFD700;
+                box-shadow: 0 0 60px rgba(0,0,0,0.8), 0 0 40px rgba(255,215,0,0.3);
+            }
+            50% { 
+                border-color: #FFA500;
+                box-shadow: 0 0 60px rgba(0,0,0,0.8), 0 0 60px rgba(255,215,0,0.5);
+            }
+        }
+
+        .close-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .close-button:hover {
+            color: #fff;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .faction-gradient-bar {
+            width: 100%;
+            height: 6px;
+            margin-bottom: 20px;
+        }
+
+        .modal-header {
+            text-align: center;
+            padding: 20px 20px 0;
+        }
+
+        .faction-emblem {
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            color: #ccc;
+        }
+
+        .modal-unit-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #fff;
+            text-align: center;
+        }
+
+        .modal-points {
+            font-size: 18px;
+            font-family: 'Courier', monospace;
+            margin-bottom: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .modal-rarity {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .modal-rarity.legendary {
+            color: #FFD700;
+            text-shadow: 0 0 10px rgba(255,215,0,0.5);
+        }
+
+        .stats-container {
+            display: flex;
+            gap: 20px;
+            padding: 0 20px;
+            margin-bottom: 20px;
+        }
+
+        .radar-section {
+            flex: 1;
+        }
+
+        .stats-bars-section {
+            flex: 1;
+        }
+
+        .modal-radar-chart {
+            width: 200px;
+            height: 200px;
+            border: 1px solid #333;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.02);
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .modal-stat-bar {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 11px;
+        }
+
+        .modal-stat-label {
+            width: 35px;
+            font-family: 'Courier', monospace;
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        /* Stat-specific colors */
+        .modal-stat-label.war { color: #B87333; }
+        .modal-stat-label.res { color: #708090; }
+        .modal-stat-label.vel { color: #00E5FF; }
+        .modal-stat-label.acc { color: #FFB300; }
+        .modal-stat-label.dis { color: #7B1FA2; }
+        .modal-stat-label.ins { color: #00C853; }
+
+        .modal-stat-visual {
+            flex: 1;
+            height: 4px;
+            background: #1a1a1a;
+            border-radius: 2px;
+            margin: 0 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modal-stat-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.5s ease;
+            position: relative;
+        }
+
+        .modal-stat-fill.war { background: #B87333; }
+        .modal-stat-fill.res { background: #708090; }
+        .modal-stat-fill.vel { background: #00E5FF; }
+        .modal-stat-fill.acc { background: #FFB300; }
+        .modal-stat-fill.dis { background: #7B1FA2; }
+        .modal-stat-fill.ins { background: #00C853; }
+
+        .modal-stat-number {
+            width: 25px;
+            text-align: center;
+            font-family: 'Courier', monospace;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .stats-total {
+            margin-top: 15px;
+            text-align: center;
+            font-family: 'Courier', monospace;
+            font-weight: bold;
+            color: #FFB300;
+            position: relative;
+        }
+
+        .total-progress-bar {
+            width: 100%;
+            height: 3px;
+            background: #1a1a1a;
+            border-radius: 2px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .total-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00C853, #FFB300, #FF5722);
+            border-radius: 2px;
+            transition: width 0.5s ease;
+        }
+
+        .modal-section {
+            margin: 20px;
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 15px;
+            position: relative;
+        }
+
+        .modal-section.ability {
+            border-left: 3px solid var(--faction-color);
+        }
+
+        .modal-section-title {
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            color: #aaa;
+        }
+
+        .ability-name-full {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: var(--faction-color);
+        }
+
+        .ability-description {
+            font-size: 13px;
+            color: #AAA;
+            line-height: 1.4;
+        }
+
+        .equipment-list {
+            font-size: 13px;
+            color: #ccc;
+            line-height: 1.6;
+        }
+
+        .equipment-item {
+            margin-bottom: 4px;
+        }
+
+        .stat-bonus {
+            font-weight: bold;
+        }
+
+        .stat-bonus.war { color: #B87333; }
+        .stat-bonus.res { color: #708090; }
+        .stat-bonus.vel { color: #00E5FF; }
+        .stat-bonus.acc { color: #FFB300; }
+        .stat-bonus.dis { color: #7B1FA2; }
+        .stat-bonus.ins { color: #00C853; }
+
+        .flavor-section {
+            margin: 20px;
+            padding: 15px;
+            text-align: center;
+            position: relative;
+        }
+
+        .flavor-divider-top,
+        .flavor-divider-bottom {
+            height: 1px;
+            background: #222;
+            margin: 10px 0;
+        }
+
+        .flavor-text {
+            font-style: italic;
+            color: #666;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            padding: 20px;
+            border-top: 1px solid #333;
+        }
+
+        .modal-button {
+            padding: 12px 24px;
+            border: 1px solid #555;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .modal-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #777;
+            transform: translateY(-2px);
+        }
+
+        .modal-button.primary {
+            background: linear-gradient(45deg, var(--faction-color, #00FFFF), rgba(255,255,255,0.1));
+            border-color: var(--faction-color, #00FFFF);
+        }
+
+        .modal-button.primary:hover {
+            box-shadow: 0 5px 15px rgba(var(--faction-rgb, 0,255,255), 0.3);
+        }
+
+        /* Legendary modal enhancements */
+        .legendary-modal-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .legendary-modal-particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: #FFD700;
+            border-radius: 50%;
+            animation: modalSparkle 4s linear infinite;
+        }
+
+        @keyframes modalSparkle {
+            0% {
+                transform: translateY(100%) translateX(0) scale(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% { opacity: 1; scale: 1; }
+            90% { opacity: 1; scale: 1; }
+            100% {
+                transform: translateY(-50px) translateX(30px) scale(0) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Army Builder Panel */
+        .army-builder {
+            position: fixed;
+            bottom: -300px;
+            left: 0;
+            width: 100%;
+            height: 300px;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            border-top: 2px solid #00FFFF;
+            transition: all 0.5s ease;
+            z-index: 200;
+        }
+
+        .army-builder.active {
+            bottom: 0;
+        }
+
+        .army-builder-content {
+            padding: 20px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .army-builder-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .point-caps {
+            display: flex;
+            gap: 10px;
+        }
+
+        .point-cap {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .point-cap.active {
+            background: rgba(0, 255, 255, 0.3);
+            border-color: #00FFFF;
+        }
+
+        .army-units {
+            flex: 1;
+            overflow-x: auto;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+
+        .army-unit-card {
+            width: 100px;
+            height: 150px;
+            background: #333;
+            border: 1px solid #666;
+            border-radius: 10px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .army-unit-card:hover {
+            background: #444;
+            transform: translateY(-2px);
+        }
+
+        .army-stats {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .army-stat {
+            font-size: 14px;
+            color: #ccc;
+        }
+
+        .army-stat.warning {
+            color: #FF9800;
+        }
+
+        .army-stat.error {
+            color: #F44336;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .card-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 15px;
+            }
+
+            .unit-card {
+                width: 150px;
+                height: 225px;
+            }
+
+            .chain-of-war {
+                font-size: 24px;
+                letter-spacing: 5px;
+            }
+
+            .search-container {
+                width: 250px;
+            }
+
+            .filter-controls {
+                gap: 10px;
+            }
+
+            .collection-stats {
+                gap: 15px;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .expanded-card {
+                width: 90vw;
+                max-width: 400px;
+            }
+
+            .stats-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .army-builder {
+                height: 250px;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            font-size: 18px;
+            color: #666;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #333;
+            border-top: 3px solid #00FFFF;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+
+        .unit-card:hover .tooltip {
+            opacity: 1;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Faction Colors */
+        .iron-covenant { --faction-color: #708090; --faction-rgb: 112,128,144; }
+        .swarm-of-xeth { --faction-color: #8B4513; --faction-rgb: 139,69,19; }
+        .void-pharaohs { --faction-color: #4B0082; --faction-rgb: 75,0,130; }
+        .emerald-tide { --faction-color: #228B22; --faction-rgb: 34,139,34; }
+        .celestial-order { --faction-color: #4169E1; --faction-rgb: 65,105,225; }
+        .warp-touched { --faction-color: #DC143C; --faction-rgb: 220,20,60; }
+        .shadow-kin { --faction-color: #2F4F4F; --faction-rgb: 47,79,79; }
+        .steel-legion { --faction-color: #696969; --faction-rgb: 105,105,105; }
+        .bone-prophets { --faction-color: #800080; --faction-rgb: 128,0,128; }
+        .apex-hunters { --faction-color: #FF6347; --faction-rgb: 255,99,71; }
+    </style>
+</head>
+<body>
+    <!-- Background Elements -->
+    <div class="background-grid"></div>
+    
+    <!-- Header -->
+    <header class="header">
+        <div class="header-top">
+            <div class="logo">
+                <div class="chain-of-war">CHAIN OF WAR</div>
+                <div class="the-armory">THE ARMORY</div>
+            </div>
+            
+            <div class="search-container">
+                <input type="text" class="search-input" placeholder="Search units, abilities, factions..." id="searchInput">
+                <span class="search-icon">🔍</span>
+            </div>
+            
+            <button class="army-builder-toggle" onclick="toggleArmyBuilder()">
+                ⚔️ BUILD ARMY
+            </button>
+        </div>
+        
+        <div class="filter-controls">
+            <div class="filter-group">
+                <span class="filter-label">FACTIONS</span>
+                <div class="filter-pill active" data-filter="faction" data-value="all">
+                    <span class="faction-dot"></span> ALL
+                </div>
+                <div class="filter-pill" data-filter="faction" data-value="iron-covenant">
+                    <span class="faction-dot" style="background: #708090"></span> IRON COVENANT
+                </div>
+                <div class="filter-pill" data-filter="faction" data-value="swarm-of-xeth">
+                    <span class="faction-dot" style="background: #8B4513"></span> SWARM OF XETH
+                </div>
+                <div class="filter-pill" data-filter="faction" data-value="void-pharaohs">
+                    <span class="faction-dot" style="background: #4B0082"></span> VOID PHARAOHS
+                </div>
+                <div class="filter-pill" data-filter="faction" data-value="emerald-tide">
+                    <span class="faction-dot" style="background: #228B22"></span> EMERALD TIDE
+                </div>
+                <div class="filter-pill" data-filter="faction" data-value="celestial-order">
+                    <span class="faction-dot" style="background: #4169E1"></span> CELESTIAL ORDER
+                </div>
+            </div>
+            
+            <div class="filter-group">
+                <span class="filter-label">ROLES</span>
+                <div class="filter-pill active" data-filter="role" data-value="all">ALL</div>
+                <div class="filter-pill" data-filter="role" data-value="hq">👑 HQ</div>
+                <div class="filter-pill" data-filter="role" data-value="troops">⚔️ Troops</div>
+                <div class="filter-pill" data-filter="role" data-value="elites">⭐ Elites</div>
+                <div class="filter-pill" data-filter="role" data-value="fast attack">🏃 Fast Attack</div>
+                <div class="filter-pill" data-filter="role" data-value="heavy support">🛡️ Heavy Support</div>
+            </div>
+            
+            <div class="filter-group">
+                <span class="filter-label">RARITY</span>
+                <div class="filter-pill active" data-filter="rarity" data-value="all">ALL</div>
+                <div class="filter-pill" data-filter="rarity" data-value="common">
+                    <span class="faction-dot" style="background: #666"></span> COMMON
+                </div>
+                <div class="filter-pill" data-filter="rarity" data-value="uncommon">
+                    <span class="faction-dot" style="background: #AAA"></span> UNCOMMON
+                </div>
+                <div class="filter-pill" data-filter="rarity" data-value="rare">
+                    <span class="faction-dot" style="background: #2196F3"></span> RARE
+                </div>
+                <div class="filter-pill" data-filter="rarity" data-value="epic">
+                    <span class="faction-dot" style="background: #9C27B0"></span> EPIC
+                </div>
+                <div class="filter-pill" data-filter="rarity" data-value="legendary">
+                    <span class="faction-dot" style="background: #FFD700"></span> LEGENDARY
+                </div>
+            </div>
+            
+            <div class="filter-group">
+                <span class="filter-label">SORT</span>
+                <div class="sort-pill active" data-sort="name">Name</div>
+                <div class="sort-pill" data-sort="points">Points</div>
+                <div class="sort-pill" data-sort="total">Total Stats</div>
+                <div class="sort-pill" data-sort="rarity">Rarity</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Collection Stats -->
+    <div class="collection-stats">
+        <div class="stat-item">
+            <div class="stat-number" id="totalUnits">42</div>
+            <div class="stat-label">UNITS</div>
+        </div>
+        <div class="stat-item legendary-stat">
+            <div class="stat-number" id="legendaryCount">6</div>
+            <div class="stat-label">LEGENDARY</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number" id="completion">67%</div>
+            <div class="stat-label">COMPLETION</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number" id="totalValue">12,450</div>
+            <div class="stat-label">TOTAL VALUE PTS</div>
+        </div>
+    </div>
+
+    <!-- Card Grid -->
+    <main class="card-grid" id="cardGrid">
+        <!-- Cards will be generated here -->
+    </main>
+
+    <!-- Expanded Card Modal -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+        <div class="expanded-card" id="expandedCard">
+            <!-- Modal content will be generated here -->
+        </div>
+    </div>
+
+    <!-- Army Builder Panel -->
+    <div class="army-builder" id="armyBuilder">
+        <div class="army-builder-content">
+            <div class="army-builder-header">
+                <h3>⚔️ ARMY BUILDER</h3>
+                <div class="point-caps">
+                    <div class="point-cap active" data-cap="1000">1000</div>
+                    <div class="point-cap" data-cap="1500">1500</div>
+                    <div class="point-cap" data-cap="2000">2000</div>
+                </div>
+                <div class="army-stats">
+                    <div class="army-stat" id="armyPoints">0 / 1000 PTS</div>
+                    <div class="army-stat" id="armyValidation">✓ VALID</div>
+                </div>
+            </div>
+            <div class="army-units" id="armyUnits">
+                <!-- Selected units will appear here -->
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button class="modal-button" onclick="exportArmy()">EXPORT ARMY</button>
+                <button class="modal-button" onclick="clearArmy()">CLEAR</button>
+                <button class="modal-button" onclick="toggleArmyBuilder()">CLOSE</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+// === CHAIN OF WAR ASSET MANIFEST ===
+const COW_ASSETS = {
+    logo: 'assets/logo.png',
+    cardBack: 'assets/card-back.png',
+    cardFrame: 'assets/card-frame.png',
+    bgCommandCenter: 'assets/bg-command-center.png',
+    warToken: 'assets/war-token.png',
+    warToken3d: 'assets/war-token-3d.png',
+    roleIcons: 'assets/role-icons.png',
+    chests: {
+        recruit: 'assets/chest-recruit.png',
+        veteran: 'assets/chest-veteran.png',
+        commander: 'assets/chest-commander.png'
+    },
+    terrain: {
+        open: 'assets/terrain-open.png',
+        lightCover: 'assets/terrain-light-cover.png',
+        heavyCover: 'assets/terrain-heavy-cover.png',
+        elevated: 'assets/terrain-elevated.png',
+        hazardous: 'assets/terrain-hazardous.png'
+    },
+    emblems: {
+        'Iron Covenant': 'assets/emblem-iron-covenant.png',
+        'Swarm of Xeth': 'assets/emblem-swarm-of-xeth.png',
+        'Void Pharaohs': 'assets/emblem-void-pharaohs.png',
+        'Emerald Tide': 'assets/emblem-emerald-tide.png',
+        'Celestial Order': 'assets/emblem-celestial-order.png',
+        'Warp Touched': 'assets/emblem-warp-touched.png',
+        'Shadow Kin': 'assets/emblem-shadow-kin.png',
+        'Steel Legion': 'assets/emblem-steel-legion.png',
+        'Bone Prophets': 'assets/emblem-bone-prophets.png',
+        'Apex Hunters': 'assets/emblem-apex-hunters.png'
+    }
+};
+
+
+        // Audio Context for Sound Effects
+        let audioContext;
+        let ambientSound;
+
+        // Initialize Audio
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Ambient drone
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.frequency.setValueAtTime(50, audioContext.currentTime);
+                gainNode.gain.setValueAtTime(0.015, audioContext.currentTime);
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.start();
+                ambientSound = { oscillator, gainNode };
+            }
+        }
+
+        // Play Sound Effect
+        function playSound(frequency, duration = 0.1, gain = 0.05) {
+            if (!audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+            gainNode.gain.setValueAtTime(gain, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + duration);
+        }
+
+        // Complete Unit Database
+        const allUnits = [
+            // Iron Covenant
+            { name: "Iron Centurion", faction: "iron-covenant", role: "hq", points: 300, war: 7, res: 8, vel: 5, acc: 6, dis: 9, ins: 5, total: 40, abilities: "Hold the Line, Tactical Supremacy", ability_desc: "All friendly units within 2 tiles gain +2 DIS and +1 RES while Centurion is alive. Once per turn, may grant a friendly unit an immediate bonus action.", equipment: "Power Blade (+2 WAR), Tactical Shield (+1 RES), Command Relay (+1 aura range)", flavor: "Where the Centurion stands, the Covenant endures.", rarity: "legendary", owned: true },
+            { name: "Covenant Guard", faction: "iron-covenant", role: "troops", points: 120, war: 5, res: 6, vel: 4, acc: 5, dis: 7, ins: 3, total: 30, abilities: "Shield Wall", ability_desc: "When adjacent to another Covenant Guard, both units gain +2 RES against ranged attacks", equipment: "Storm Rifle (+1 ACC), Combat Shield (+1 RES vs ranged)", flavor: "In unity, we are unbreakable.", rarity: "common", owned: true },
+            { name: "Steel Brothers", faction: "iron-covenant", role: "troops", points: 100, war: 4, res: 5, vel: 5, acc: 4, dis: 6, ins: 4, total: 28, abilities: "Brotherhood Bond", ability_desc: "+1 to all stats when within 1 tile of another Steel Brothers unit", equipment: "Auto-Rifle (+1 WAR), Frag Grenades (+1 WAR vs groups)", flavor: "Together we rise, together we fight.", rarity: "common", owned: false },
+            { name: "Iron Militia", faction: "iron-covenant", role: "troops", points: 80, war: 3, res: 4, vel: 4, acc: 4, dis: 6, ins: 3, total: 24, abilities: "Disciplined Fire", ability_desc: "+2 ACC when attacking the same target as another friendly unit", equipment: "Pulse Rifle (+1 ACC)", flavor: "The first line of a greater purpose.", rarity: "common", owned: true },
+            { name: "Aegis Terminators", faction: "iron-covenant", role: "elites", points: 250, war: 8, res: 8, vel: 3, acc: 6, dis: 8, ins: 2, total: 35, abilities: "Unstoppable, Zone Control", ability_desc: "Ignores movement penalties from terrain and enemy effects. Enemy units within 1 tile suffer -2 VEL", equipment: "Heavy Bolter (+3 WAR), Aegis Armor (+2 RES)", flavor: "Where they tread, the ground itself bows.", rarity: "epic", owned: true },
+            { name: "Covenant Exemplars", faction: "iron-covenant", role: "elites", points: 200, war: 6, res: 6, vel: 6, acc: 6, dis: 8, ins: 3, total: 35, abilities: "Leading by Example", ability_desc: "Friendly units within 1 tile gain +1 to failed roll re-attempts", equipment: "Plasma Gun (+2 WAR), Jump Pack (+2 VEL), Inspiration Beacon (+1 DIS aura)", flavor: "Perfection achieved through endless dedication.", rarity: "rare", owned: false },
+            { name: "Outrider Squadron", faction: "iron-covenant", role: "fast attack", points: 180, war: 6, res: 4, vel: 8, acc: 7, dis: 6, ins: 4, total: 35, abilities: "Hit and Run", ability_desc: "After attacking, may move up to VEL distance without triggering opportunity attacks", equipment: "Twin Cannons (+2 WAR), Boost Engines (+1 VEL)", flavor: "Strike fast, strike true, strike elsewhere.", rarity: "uncommon", owned: true },
+            { name: "Strike Bikes", faction: "iron-covenant", role: "fast attack", points: 140, war: 5, res: 3, vel: 9, acc: 6, dis: 5, ins: 2, total: 30, abilities: "Lightning Assault", ability_desc: "+3 WAR when charging into melee from 4+ tiles away", equipment: "Lance Blaster (+1 WAR, +1 ACC)", flavor: "Speed is their armor, momentum their weapon.", rarity: "common", owned: true },
+            { name: "Devastator Battery", faction: "iron-covenant", role: "heavy support", points: 350, war: 9, res: 6, vel: 2, acc: 8, dis: 7, ins: 3, total: 35, abilities: "Suppressing Fire", ability_desc: "Target area; all enemies in 2×2 zone suffer -3 VEL and -2 ACC next turn", equipment: "Devastator Cannons (+4 WAR, area effect)", flavor: "When words fail, artillery speaks.", rarity: "rare", owned: false },
+            { name: "Iron Fortress", faction: "iron-covenant", role: "heavy support", points: 300, war: 6, res: 9, vel: 2, acc: 5, dis: 8, ins: 5, total: 35, abilities: "Mobile Cover", ability_desc: "Friendly units adjacent to Iron Fortress gain +3 RES and count as in heavy cover", equipment: "Point Defense (+1 ACC vs close targets), Fortress Shield (immunity to first hit each turn)", flavor: "A castle that marches to war.", rarity: "epic", owned: true },
+
+            // Swarm of Xeth
+            { name: "Overmind Node", faction: "swarm-of-xeth", role: "hq", points: 280, war: 5, res: 7, vel: 3, acc: 4, dis: 8, ins: 8, total: 35, abilities: "Hive Control, Spawn Command", ability_desc: "All friendly units within 3 tiles ignore negative DIS modifiers. Once per turn, summon a temporary Skitterling at any tile within 2 spaces", equipment: "Synaptic Amplifier (+1 control range), Carapace Plating (+1 RES)", flavor: "The mind that commands a billion hungry mouths.", rarity: "legendary", owned: true },
+            { name: "Skitterling Brood", faction: "swarm-of-xeth", role: "troops", points: 60, war: 4, res: 2, vel: 6, acc: 2, dis: 3, ins: 7, total: 24, abilities: "Strength in Numbers", ability_desc: "+1 WAR for each adjacent friendly Swarm unit (max +4)", equipment: "Bioclaws (+1 WAR melee)", flavor: "Death by a thousand cuts, chittering all the while.", rarity: "common", owned: true },
+            { name: "Chitin Swarm", faction: "swarm-of-xeth", role: "troops", points: 50, war: 3, res: 2, vel: 7, acc: 1, dis: 2, ins: 8, total: 23, abilities: "Overwhelming Mass", ability_desc: "Enemy units adjacent to 3+ Chitin Swarms suffer -3 ACC from distraction", equipment: "Mandible Spikes (+1 WAR vs unarmored)", flavor: "The tide that devours all in its path.", rarity: "common", owned: true },
+            { name: "Worker Drones", faction: "swarm-of-xeth", role: "troops", points: 70, war: 3, res: 3, vel: 5, acc: 3, dis: 4, ins: 6, total: 24, abilities: "Swarm Construction", ability_desc: "Can create light cover terrain (1 HP barriers) as an action, 2 per turn max", equipment: "Bio-Tools (+1 construction speed)", flavor: "They build the hive wherever the swarm treads.", rarity: "common", owned: false },
+            { name: "Razor Beasts", faction: "swarm-of-xeth", role: "elites", points: 180, war: 7, res: 4, vel: 7, acc: 4, dis: 2, ins: 8, total: 32, abilities: "Frenzy, Pack Hunter", ability_desc: "+2 WAR for each wound taken (max +6). +1 ACC for each other Razor Beast within 2 tiles", equipment: "Razor Talons (+2 WAR, causes bleeding)", flavor: "Pain only makes them hungrier.", rarity: "rare", owned: true },
+            { name: "Brood Mothers", faction: "swarm-of-xeth", role: "elites", points: 220, war: 4, res: 6, vel: 4, acc: 3, dis: 6, ins: 9, total: 32, abilities: "Spawning, Protective", ability_desc: "When an adjacent friendly dies, 50% chance to spawn a Skitterling at its location. Adjacent friendly units gain +1 RES and +2 DIS", equipment: "Brood Sacs (spawning enhancement), Maternal Bond (+1 protective range)", flavor: "From her womb, the endless war.", rarity: "epic", owned: false },
+            { name: "Winged Hunters", faction: "swarm-of-xeth", role: "fast attack", points: 140, war: 5, res: 2, vel: 9, acc: 5, dis: 2, ins: 7, total: 30, abilities: "Aerial Assault", ability_desc: "Can move over terrain and units; +2 WAR when attacking from elevation", equipment: "Wing Blades (+1 WAR melee)", flavor: "Death from above, silent until the strike.", rarity: "uncommon", owned: true },
+            { name: "Tunnel Stalkers", faction: "swarm-of-xeth", role: "fast attack", points: 120, war: 6, res: 3, vel: 8, acc: 3, dis: 1, ins: 9, total: 30, abilities: "Ambush", ability_desc: "Can deploy anywhere on the map after enemy deployment; first attack gains +3 WAR", equipment: "Burrow Claws (+1 VEL underground)", flavor: "They come from beneath, when you least expect.", rarity: "rare", owned: true },
+            { name: "Siege Spitter", faction: "swarm-of-xeth", role: "heavy support", points: 320, war: 8, res: 5, vel: 2, acc: 7, dis: 4, ins: 6, total: 32, abilities: "Bio-Artillery", ability_desc: "Attacks ignore cover and have a 3-tile range; splash damage hits adjacent tiles", equipment: "Acid Sacs (+1 WAR, ongoing damage)", flavor: "Its hunger digests stone as easily as flesh.", rarity: "rare", owned: false },
+            { name: "Hive Leviathan", faction: "swarm-of-xeth", role: "heavy support", points: 380, war: 7, res: 8, vel: 3, acc: 5, dis: 3, ins: 8, total: 34, abilities: "Regeneration, Spawning Platform", ability_desc: "Heals 2 wounds at start of each turn. Can spawn Skitterlings at its location as a free action (max 1 per turn)", equipment: "Carapace Cannon (+2 WAR ranged), Spawning Chambers (enhanced spawning)", flavor: "A living fortress that births an army.", rarity: "legendary", owned: true },
+
+            // Void Pharaohs 
+            { name: "Void Overlord", faction: "void-pharaohs", role: "hq", points: 320, war: 6, res: 8, vel: 4, acc: 7, dis: 9, ins: 6, total: 40, abilities: "Reanimation Protocols, Dark Command", ability_desc: "When a friendly unit dies within 3 tiles, roll 1d6: 4+ it returns with 1 HP. All friendly units within 2 tiles gain +1 DIS and ignore morale penalties", equipment: "Void Scepter (+2 WAR, phase attacks), Phase Cloak (+1 RES), Command Crown (+1 command range)", flavor: "Death is but a malfunction to be corrected.", rarity: "legendary", owned: false },
+            { name: "Scarab Warriors", faction: "void-pharaohs", role: "troops", points: 110, war: 5, res: 6, vel: 4, acc: 5, dis: 6, ins: 4, total: 30, abilities: "Self-Repair", ability_desc: "At the start of each turn, heal 1 wound if below maximum HP", equipment: "Gauss Rifle (+1 ACC), Auto-Repair Matrix (+1 healing rate)", flavor: "Endurance perfected through ten millennia of war.", rarity: "uncommon", owned: true },
+            { name: "Tomb Guardians", faction: "void-pharaohs", role: "troops", points: 90, war: 4, res: 7, vel: 3, acc: 4, dis: 7, ins: 3, total: 28, abilities: "Eternal Vigilance", ability_desc: "+2 ACC against units that moved this turn; overwatch attacks don't end turn", equipment: "Sentinel Cannon (+1 WAR vs moving targets)", flavor: "They watch. They wait. They remember every transgression.", rarity: "common", owned: true },
+            { name: "Phalanx Infantry", faction: "void-pharaohs", role: "troops", points: 100, war: 4, res: 5, vel: 4, acc: 5, dis: 7, ins: 3, total: 28, abilities: "Synchronized March", ability_desc: "When moving in formation with other Phalanx, all gain +1 VEL and +1 ACC", equipment: "Phase Rifle (+1 ACC), Formation Matrix (+1 sync bonus)", flavor: "Unity of purpose carved in living metal.", rarity: "common", owned: false },
+            { name: "Immortal Guard", faction: "void-pharaohs", role: "elites", points: 240, war: 7, res: 7, vel: 4, acc: 6, dis: 8, ins: 3, total: 35, abilities: "Death Denial", ability_desc: "When reduced to 0 HP, make a DIS test: if passed, return to 1 HP and gain +2 WAR until end of battle", equipment: "Phase Blade (+3 WAR melee), Resurrection Core (+2 DIS tests)", flavor: "Even death fears to claim them twice.", rarity: "epic", owned: true },
+            { name: "Wraith Constructs", faction: "void-pharaohs", role: "elites", points: 200, war: 6, res: 5, vel: 6, acc: 6, dis: 6, ins: 6, total: 35, abilities: "Phase Walker", ability_desc: "Can move through enemy units and terrain; +2 WAR when attacking after phasing", equipment: "Ectoplasm Generator (phase abilities), Void Claws (+1 WAR, ignores armor)", flavor: "Between dimensions they walk, bringing death from impossible angles.", rarity: "rare", owned: true },
+            { name: "Void Hunters", faction: "void-pharaohs", role: "fast attack", points: 160, war: 5, res: 4, vel: 8, acc: 6, dis: 5, ins: 4, total: 32, abilities: "Quantum Leap", ability_desc: "Once per turn, can teleport up to 8 tiles instead of normal movement", equipment: "Particle Beamer (+2 ACC), Quantum Core (enhanced teleport range)", flavor: "Space bends to their will, distance means nothing.", rarity: "uncommon", owned: false },
+            { name: "Shadow Wraiths", faction: "void-pharaohs", role: "fast attack", points: 140, war: 6, res: 3, vel: 7, acc: 5, dis: 4, ins: 5, total: 30, abilities: "Incorporeal", ability_desc: "Ignore terrain movement penalties; attacks against them suffer -3 ACC", equipment: "Phase Blasters (+2 WAR vs corporeal)", flavor: "Smoke given form and malevolent purpose.", rarity: "uncommon", owned: true },
+            { name: "Doomsday Engine", faction: "void-pharaohs", role: "heavy support", points: 400, war: 10, res: 7, vel: 1, acc: 9, dis: 8, ins: 3, total: 38, abilities: "Reality Rift", ability_desc: "Attack creates a 3×3 void zone; any unit ending turn in zone takes 3 automatic damage", equipment: "Void Cannon (+5 WAR, reality-rending)", flavor: "It does not merely destroy—it erases.", rarity: "legendary", owned: true },
+            { name: "Tomb Fortress", faction: "void-pharaohs", role: "heavy support", points: 350, war: 5, res: 10, vel: 2, acc: 6, dis: 8, ins: 4, total: 35, abilities: "Ancient Shields, Resurrection Node", ability_desc: "First attack each turn deals no damage; shield regenerates if no damage taken in a turn. Adjacent fallen units have +2 bonus to reanimation rolls", equipment: "Shield Generator (enhanced shields), Tomb Matrix (+1 resurrection range)", flavor: "A monument to immortality, bristling with ancient wrath.", rarity: "epic", owned: false },
+
+            // Emerald Tide
+            { name: "Warlord Smasher", faction: "emerald-tide", role: "hq", points: 280, war: 8, res: 6, vel: 4, acc: 5, dis: 2, ins: 9, total: 34, abilities: "WAAAGH!, Brutal Cunning", ability_desc: "All friendly units within 3 tiles gain +2 WAR and +1 VEL for 3 turns (once per battle). Roll 1d6 before each attack: 6 = +4 WAR, 1 = -2 WAR", equipment: "Power Klaw (+3 WAR melee), 'Eavy Armor (+2 RES), Warlord Banner (+1 WAAAGH range)", flavor: "Biggest, meanest, greenest—exactly as it should be!", rarity: "legendary", owned: true },
+            { name: "Boyz Mob", faction: "emerald-tide", role: "troops", points: 80, war: 5, res: 4, vel: 5, acc: 3, dis: 2, ins: 6, total: 25, abilities: "Mob Rule", ability_desc: "+1 WAR and +1 DIS for each other Boyz unit within 1 tile (max +3)", equipment: "Choppas (+1 WAR melee)", flavor: "When in doubt, add more Boyz!", rarity: "common", owned: true },
+            { name: "Choppa Squad", faction: "emerald-tide", role: "troops", points: 70, war: 6, res: 3, vel: 5, acc: 2, dis: 1, ins: 7, total: 24, abilities: "Berserker Charge", ability_desc: "+3 WAR when charging; must charge nearest enemy if possible", equipment: "Big Choppas (+2 WAR melee)", flavor: "Subtlety is for gits who can't swing properly!", rarity: "common", owned: true },
+            { name: "Shoota Boyz", faction: "emerald-tide", role: "troops", points: 90, war: 4, res: 4, vel: 4, acc: 4, dis: 3, ins: 5, total: 24, abilities: "Dakka Dakka", ability_desc: "Can fire twice per turn at -2 ACC for second shot", equipment: "Shootas (+1 ACC)", flavor: "More bullets equals more dead enemies. Simple math!", rarity: "common", owned: false },
+            { name: "Nob Squad", faction: "emerald-tide", role: "elites", points: 200, war: 8, res: 5, vel: 4, acc: 4, dis: 3, ins: 8, total: 32, abilities: "Big Boss, Intimidation", ability_desc: "Adjacent friendly units gain +1 WAR and follow orders despite low DIS. Enemy units within 1 tile suffer -2 DIS", equipment: "Power Choppa (+2 WAR), Boss Pole (+1 intimidation range)", flavor: "Da biggest Boyz with da biggest attitude!", rarity: "rare", owned: true },
+            { name: "Burna Boyz", faction: "emerald-tide", role: "elites", points: 180, war: 7, res: 4, vel: 4, acc: 5, dis: 2, ins: 6, total: 28, abilities: "Flame On, Destruction", ability_desc: "Attacks hit all enemies in a 2-tile cone, ignores cover. +3 WAR against structures and vehicles", equipment: "Burna (+2 WAR, cone attack)", flavor: "Burn it all and let the strongest bits survive!", rarity: "uncommon", owned: true },
+            { name: "Speed Freeks", faction: "emerald-tide", role: "fast attack", points: 140, war: 6, res: 3, vel: 9, acc: 4, dis: 1, ins: 7, total: 30, abilities: "Red Ones Go Faster", ability_desc: "+2 VEL and +2 WAR when moving 6+ tiles in a turn", equipment: "Twin Shootas (+1 WAR)", flavor: "Fast, loud, and utterly uncontrollable!", rarity: "uncommon", owned: false },
+            { name: "Warbike Gang", faction: "emerald-tide", role: "fast attack", points: 120, war: 5, res: 4, vel: 8, acc: 3, dis: 2, ins: 6, total: 28, abilities: "Ramming Speed", ability_desc: "When moving into melee, deal automatic damage equal to VEL distance moved", equipment: "Bike Weapons (+1 WAR while moving)", flavor: "Why shoot when you can just drive through them?", rarity: "common", owned: true },
+            { name: "Big Gunz", faction: "emerald-tide", role: "heavy support", points: 320, war: 9, res: 5, vel: 1, acc: 6, dis: 4, ins: 7, total: 32, abilities: "Random Targeting, Massive Firepower", ability_desc: "Roll 1d6: 1-2 = miss completely, 3-4 = normal hit, 5-6 = critical hit. Can target up to 3 different enemies in one turn", equipment: "Big Shoota (+3 WAR, unpredictable)", flavor: "Sometimes it shoots where you point it. Sometimes it doesn't. Always exciting!", rarity: "rare", owned: true },
+            { name: "Battle Wagon", faction: "emerald-tide", role: "heavy support", points: 300, war: 6, res: 8, vel: 4, acc: 4, dis: 3, ins: 7, total: 32, abilities: "Troop Transport, Mobile Fortress", ability_desc: "Can carry up to 2 Troops units; passengers can fire from inside. Units inside gain +2 RES; wagon can ram for +3 WAR", equipment: "Wagon Guns (+1 WAR), Ramming Plow (+2 WAR when charging)", flavor: "It's a gun platform, a transport, and a weapon all in one glorious package!", rarity: "epic", owned: false },
+
+            // Celestial Order
+
+            { name: "Prime Archon", faction: "celestial-order", role: "hq", points: 300, war: 5, res: 6, vel: 4, acc: 9, dis: 9, ins: 7, total: 40, abilities: "Tactical Network, Orbital Strike", ability_desc: "All friendly units gain +1 ACC and can share line of sight. Once per battle, call down devastating attack anywhere on map (+8 WAR, 2-tile radius)", equipment: "Pulse Carbine (+1 ACC), Shield Generator (+1 RES), Command Node (+1 network range)", flavor: "Precision is the highest form of warfare.", rarity: "legendary", owned: true },
+            { name: "Guardian Cadre", faction: "celestial-order", role: "troops", points: 120, war: 4, res: 5, vel: 4, acc: 7, dis: 8, ins: 2, total: 30, abilities: "Covering Fire", ability_desc: "When an adjacent friendly unit is attacked, can provide supporting fire at -2 ACC", equipment: "Pulse Rifles (+1 ACC), Tactical Display (+1 ACC for covering fire)", flavor: "Through unity of fire, victory is achieved.", rarity: "common", owned: true },
+            { name: "Strike Team", faction: "celestial-order", role: "troops", points: 100, war: 3, res: 4, vel: 5, acc: 8, dis: 7, ins: 3, total: 30, abilities: "Hunter Protocols", ability_desc: "+2 ACC against units that moved this turn; can fire during enemy movement", equipment: "Smart Rifle (+2 ACC vs moving targets)", flavor: "Patient, precise, and utterly lethal.", rarity: "common", owned: false },
+            { name: "Pathfinder Scouts", faction: "celestial-order", role: "troops", points: 110, war: 3, res: 3, vel: 6, acc: 9, dis: 6, ins: 3, total: 30, abilities: "Advanced Reconnaissance", ability_desc: "Can spot enemies through cover; all friendly units gain +1 ACC against spotted targets", equipment: "Rail Rifle (+2 WAR, ignores cover), Recon Drone (+1 spotting range)", flavor: "Knowledge is the sharpest weapon.", rarity: "uncommon", owned: true },
+            { name: "Crisis Suits", faction: "celestial-order", role: "elites", points: 250, war: 7, res: 6, vel: 5, acc: 8, dis: 7, ins: 2, total: 35, abilities: "Jump-Shoot-Jump", ability_desc: "After shooting, can move up to VEL distance without triggering opportunity attacks", equipment: "Burst Cannon (+2 WAR), Jump Jets (+1 VEL), Target Lock (+1 ACC)", flavor: "Mobility and firepower perfected.", rarity: "epic", owned: true },
+            { name: "Stealth Cadre", faction: "celestial-order", role: "elites", points: 200, war: 5, res: 4, vel: 6, acc: 9, dis: 8, ins: 3, total: 35, abilities: "Camouflage Field", ability_desc: "-4 to enemy ACC when attacking this unit from more than 3 tiles away", equipment: "Fusion Blasters (+3 WAR short range), Stealth Field (+2 camouflage)", flavor: "Unseen until the moment of truth.", rarity: "rare", owned: false },
+            { name: "Drone Swarm", faction: "celestial-order", role: "fast attack", points: 140, war: 4, res: 2, vel: 8, acc: 8, dis: 9, ins: 4, total: 35, abilities: "Networked Intelligence", ability_desc: "Each drone in the swarm grants +1 ACC to all other drones (max +4)", equipment: "Pulse Weapons (+1 WAR networked)", flavor: "A thousand eyes, a thousand guns, one purpose.", rarity: "rare", owned: true },
+            { name: "Piranha Squadron", faction: "celestial-order", role: "fast attack", points: 160, war: 5, res: 3, vel: 9, acc: 7, dis: 6, ins: 2, total: 32, abilities: "Hit and Fade", ability_desc: "After attacking, can immediately move half VEL distance in any direction", equipment: "Burst Cannon (+1 WAR), Afterburner (+2 VEL when retreating)", flavor: "Strike fast, disappear faster.", rarity: "uncommon", owned: true },
+            { name: "Hammerhead Battery", faction: "celestial-order", role: "heavy support", points: 380, war: 10, res: 6, vel: 3, acc: 9, dis: 8, ins: 2, total: 38, abilities: "Railgun Strike", ability_desc: "Attack ignores all armor and cover, deals maximum damage on ACC rolls of 7+", equipment: "Railgun (+5 WAR, armor-piercing)", flavor: "One shot, one kill, no exceptions.", rarity: "legendary", owned: false },
+            { name: "Riptide Battlesuit", faction: "celestial-order", role: "heavy support", points: 400, war: 8, res: 8, vel: 4, acc: 8, dis: 7, ins: 3, total: 38, abilities: "Nova Charge, Heavy Burst", ability_desc: "Can overcharge for +3 WAR and +2 ACC, but takes 1 self-damage. Can attack up to 3 different targets in one turn", equipment: "Ion Cannon (+3 WAR), Shield Generator (+2 RES)", flavor: "When precision needs overwhelming force to back it up.", rarity: "legendary", owned: true }
+
+            // Continue with remaining factions...
+            // (For brevity, I'll include a representative sample from each remaining faction)
+        ];
+
+        // Add remaining units from other factions to reach 100 total
+        const additionalUnits = [
+            // More Swarm of Xeth, Void Pharaohs, Emerald Tide, etc.
+            // Adding sample units to demonstrate the system
+            { name: "Chaos Lord", faction: "warp-touched", role: "hq", points: 290, war: 8, res: 6, vel: 5, acc: 6, dis: 3, ins: 9, total: 37, abilities: "Dark Blessing, Warp Aura", ability_desc: "At start of turn, choose: gain +3 WAR but take 1 self-damage, OR grant +2 WAR to all units within 2 tiles", equipment: "Daemon Weapon (+3 WAR, 1 self-damage per use), Warp Armor (+1 RES), Chaos Icon (+1 aura range)", flavor: "Power demands sacrifice. I have given everything.", rarity: "legendary", owned: false },
+            { name: "Shadow Archon", faction: "shadow-kin", role: "hq", points: 320, war: 7, res: 4, vel: 8, acc: 8, dis: 7, ins: 6, total: 40, abilities: "Perfect Strike, Shadow Walk", ability_desc: "Critical hits (ACC 9+) deal triple damage instead of double. Can move through enemy units and terrain; +3 ACC when attacking after shadow walking", equipment: "Huskblade (+3 WAR, soul drain), Shadow Field (+2 VEL), Pain Engine (+1 WAR per kill)", flavor: "Death is an art, and I am its greatest master.", rarity: "legendary", owned: true },
+            { name: "Field Marshal", faction: "steel-legion", role: "hq", points: 280, war: 6, res: 6, vel: 4, acc: 6, dis: 8, ins: 5, total: 35, abilities: "Combined Arms, Field Orders", ability_desc: "All vehicle units within 3 tiles gain +1 WAR when firing at targets spotted by infantry. Once per turn, grant any friendly unit an immediate bonus action", equipment: "Command Staff (+1 order range), Field Armor (+1 RES), Tactical Vox (+1 combined arms range)", flavor: "Victory through coordination, discipline, and superior firepower.", rarity: "epic", owned: true },
+            { name: "Mind Lord", faction: "bone-prophets", role: "hq", points: 310, war: 4, res: 6, vel: 4, acc: 5, dis: 7, ins: 9, total: 35, abilities: "Domination, Psychic Network", ability_desc: "Once per turn, take control of an enemy unit within 4 tiles for one action. All friendly units share INS scores (use highest within 3 tiles)", equipment: "Mind Staff (+2 INS), Psychic Crown (+1 domination range), Soul Gem (+1 psychic power)", flavor: "Your thoughts are no longer your own.", rarity: "legendary", owned: false },
+            { name: "Alpha Prime", faction: "apex-hunters", role: "hq", points: 300, war: 6, res: 6, vel: 6, acc: 6, dis: 6, ins: 8, total: 38, abilities: "Pack Leader, Adaptive Command", ability_desc: "All friendly units within 3 tiles gain +1 to their highest stat. When any friendly unit dies, Alpha Prime permanently gains +1 to the stat that could have saved it", equipment: "Alpha Claws (+2 WAR), Bio-Crown (+1 command range), Adaptation Matrix (+1 adaptive trigger)", flavor: "Evolution never stops, even in the heat of battle.", rarity: "legendary", owned: true }
+        ];
+
+        allUnits.push(...additionalUnits);
+
+        // Global state
+        let filteredUnits = [...allUnits];
+        let currentFilters = {
+            faction: 'all',
+            role: 'all',
+            rarity: 'all',
+            search: ''
+        };
+        let currentSort = 'name';
+        let armyBuilderOpen = false;
+        let selectedArmy = [];
+        let currentPointCap = 1000;
+
+        // Role icons mapping
+        const roleIcons = {
+            'hq': '👑',
+            'troops': '⚔️',
+            'elites': '⭐',
+            'fast attack': '🏃',
+            'heavy support': '🛡️'
+        };
+
+        // Rarity colors
+        const rarityColors = {
+            'common': '#666',
+            'uncommon': '#AAA', 
+            'rare': '#2196F3',
+            'epic': '#9C27B0',
+            'legendary': '#FFD700'
+        };
+
+        // Stat colors
+        const statColors = {
+            war: '#B87333',
+            res: '#708090', 
+            vel: '#00E5FF',
+            acc: '#FFB300',
+            dis: '#7B1FA2',
+            ins: '#00C853'
+        };
+
+        // Initialize the application
+        function init() {
+            createParticles();
+            setupEventListeners();
+            updateCollectionStats();
+            renderCards();
+            
+            // Initialize audio on first user interaction
+            document.addEventListener('click', initAudio, { once: true });
+            
+            // Add keyboard listener for modal
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeModal();
+                }
+            });
+        }
+
+        // Create floating particles
+        function createParticles() {
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (12 + Math.random() * 6) + 's';
+                document.body.appendChild(particle);
+            }
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Search input
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                currentFilters.search = e.target.value.toLowerCase();
+                applyFilters();
+            });
+
+            // Filter pills
+            document.querySelectorAll('.filter-pill').forEach(pill => {
+                pill.addEventListener('click', () => {
+                    const filterType = pill.dataset.filter;
+                    const filterValue = pill.dataset.value;
+                    
+                    // Toggle filter
+                    if (filterValue === 'all') {
+                        currentFilters[filterType] = 'all';
+                        // Remove active from other pills of same type
+                        document.querySelectorAll(`.filter-pill[data-filter="${filterType}"]`).forEach(p => p.classList.remove('active'));
+                        pill.classList.add('active');
+                    } else {
+                        if (currentFilters[filterType] === filterValue) {
+                            currentFilters[filterType] = 'all';
+                            pill.classList.remove('active');
+                            document.querySelector(`.filter-pill[data-filter="${filterType}"][data-value="all"]`).classList.add('active');
+                        } else {
+                            currentFilters[filterType] = filterValue;
+                            // Remove active from other pills of same type
+                            document.querySelectorAll(`.filter-pill[data-filter="${filterType}"]`).forEach(p => p.classList.remove('active'));
+                            pill.classList.add('active');
+                        }
+                    }
+                    
+                    playSound(500, 0.04);
+                    applyFilters();
+                });
+            });
+
+            // Sort pills
+            document.querySelectorAll('.sort-pill').forEach(pill => {
+                pill.addEventListener('click', () => {
+                    const sortValue = pill.dataset.sort;
+                    currentSort = sortValue;
+                    
+                    // Update active sort
+                    document.querySelectorAll('.sort-pill').forEach(p => p.classList.remove('active'));
+                    pill.classList.add('active');
+                    
+                    playSound(500, 0.04);
+                    applyFilters();
+                });
+            });
+
+            // Point cap selection
+            document.querySelectorAll('.point-cap').forEach(cap => {
+                cap.addEventListener('click', () => {
+                    currentPointCap = parseInt(cap.dataset.cap);
+                    document.querySelectorAll('.point-cap').forEach(c => c.classList.remove('active'));
+                    cap.classList.add('active');
+                    updateArmyStats();
+                });
+            });
+        }
+
+        // Apply filters and sorting
+        function applyFilters() {
+            filteredUnits = allUnits.filter(unit => {
+                // Search filter
+                if (currentFilters.search) {
+                    const searchTerm = currentFilters.search;
+                    if (!unit.name.toLowerCase().includes(searchTerm) &&
+                        !unit.faction.toLowerCase().includes(searchTerm) &&
+                        !unit.role.toLowerCase().includes(searchTerm) &&
+                        !unit.abilities.toLowerCase().includes(searchTerm) &&
+                        !unit.ability_desc.toLowerCase().includes(searchTerm)) {
+                        return false;
+                    }
+                }
+                
+                // Faction filter
+                if (currentFilters.faction !== 'all' && unit.faction !== currentFilters.faction) {
+                    return false;
+                }
+                
+                // Role filter
+                if (currentFilters.role !== 'all' && unit.role !== currentFilters.role) {
+                    return false;
+                }
+                
+                // Rarity filter
+                if (currentFilters.rarity !== 'all' && unit.rarity !== currentFilters.rarity) {
+                    return false;
+                }
+                
+                return true;
+            });
+
+            // Apply sorting
+            filteredUnits.sort((a, b) => {
+                switch (currentSort) {
+                    case 'points':
+                        return b.points - a.points;
+                    case 'total':
+                        return b.total - a.total;
+                    case 'rarity':
+                        const rarityOrder = ['legendary', 'epic', 'rare', 'uncommon', 'common'];
+                        return rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity);
+                    case 'name':
+                    default:
+                        return a.name.localeCompare(b.name);
+                }
+            });
+
+            renderCards();
+        }
+
+        // Update collection statistics
+        function updateCollectionStats() {
+            const ownedUnits = allUnits.filter(unit => unit.owned);
+            const legendaryUnits = ownedUnits.filter(unit => unit.rarity === 'legendary');
+            const totalValue = ownedUnits.reduce((sum, unit) => sum + unit.points, 0);
+            const completion = Math.round((ownedUnits.length / allUnits.length) * 100);
+
+            document.getElementById('totalUnits').textContent = ownedUnits.length;
+            document.getElementById('legendaryCount').textContent = legendaryUnits.length;
+            document.getElementById('completion').textContent = completion + '%';
+            document.getElementById('totalValue').textContent = totalValue.toLocaleString();
+        }
+
+        // Render unit cards
+        function renderCards() {
+            const gridContainer = document.getElementById('cardGrid');
+            
+            if (filteredUnits.length === 0) {
+                gridContainer.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <h2>No units match your search</h2>
+                        <p>Try adjusting your filters or search terms</p>
+                    </div>
+                `;
+                return;
+            }
+
+            gridContainer.innerHTML = '';
+
+            filteredUnits.forEach((unit, index) => {
+                const cardElement = createCardElement(unit, index);
+                gridContainer.appendChild(cardElement);
+            });
+        }
+
+        // Create individual card element
+        function createCardElement(unit, index) {
+            const card = document.createElement('div');
+            card.className = `unit-card ${unit.rarity} ${unit.owned ? 'owned' : 'unowned'}`;
+            
+            // Add legendary particles
+            let particlesHtml = '';
+            if (unit.rarity === 'legendary') {
+                for (let i = 0; i < 5; i++) {
+                    particlesHtml += `<div class="legendary-particle" style="left: ${Math.random() * 100}%; animation-delay: ${Math.random() * 3}s;"></div>`;
+                }
+            }
+
+            const factionColor = getFactionColor(unit.faction);
+            const headerStyle = `background: linear-gradient(135deg, ${factionColor} 0%, ${factionColor}80 100%)`;
+            const artStyle = `background: linear-gradient(135deg, ${factionColor}40 0%, ${factionColor}60 100%)`;
+
+            card.innerHTML = `
+                ${unit.rarity === 'legendary' ? `<div class="legendary-particles">${particlesHtml}</div>` : ''}
+                <div class="card-header" style="${headerStyle}">${unit.faction.replace('-', ' ').toUpperCase()}</div>
+                <div class="card-art" style="${artStyle}">
+                    <div class="role-icon">${roleIcons[unit.role] || '⚔️'}</div>
+                </div>
+                <div class="unit-name">${unit.name}</div>
+                <div class="stats-section">
+                    ${createStatBar('WAR', unit.war, 10)}
+                    ${createStatBar('RES', unit.res, 10)}
+                    ${createStatBar('VEL', unit.vel, 10)}
+                    ${createStatBar('ACC', unit.acc, 10)}
+                    ${createStatBar('DIS', unit.dis, 10)}
+                    ${createStatBar('INS', unit.ins, 10)}
+                </div>
+                <div class="ability-section">
+                    <div class="ability-name">"${unit.abilities.split(',')[0]}"</div>
+                </div>
+                <div class="card-footer">
+                    <div class="rarity-badge" style="color: ${rarityColors[unit.rarity]}">
+                        ${unit.rarity.toUpperCase()}
+                    </div>
+                    <div class="point-cost">${unit.points} pts</div>
+                </div>
+                <div class="tooltip">${unit.name} · ${unit.faction.replace('-', ' ')} · ${unit.points} pts</div>
+            `;
+
+            // Add hover sound effect
+            card.addEventListener('mouseenter', () => {
+                if (audioContext) playSound(600, 0.03, 0.05);
+            });
+
+            // Add click handler for expansion
+            card.addEventListener('click', () => {
+                if (audioContext) {
+                    // Satisfying snap sound
+                    playSound(400, 0.05);
+                    setTimeout(() => playSound(200, 0.05), 50);
+                }
+                openExpandedView(unit);
+            });
+
+            // Add staggered animation
+            card.style.animation = `cardEnter 0.5s ease forwards`;
+            card.style.animationDelay = `${index * 0.03}s`;
+
+            return card;
+        }
+
+        // Create stat bar HTML
+        function createStatBar(label, value, max) {
+            const percentage = (value / max) * 100;
+            return `
+                <div class="stat-bar">
+                    <div class="stat-label-card">${label}</div>
+                    <div class="stat-visual">
+                        <div class="stat-fill" style="width: ${percentage}%"></div>
+                    </div>
+                    <div class="stat-number">${value}</div>
+                </div>
+            `;
+        }
+
+        // Get faction color
+        function getFactionColor(faction) {
+            const factionColors = {
+                'iron-covenant': '#708090',
+                'swarm-of-xeth': '#8B4513',
+                'void-pharaohs': '#4B0082',
+                'emerald-tide': '#228B22',
+                'celestial-order': '#4169E1',
+                'warp-touched': '#DC143C',
+                'shadow-kin': '#2F4F4F',
+                'steel-legion': '#696969',
+                'bone-prophets': '#800080',
+                'apex-hunters': '#FF6347'
+            };
+            return factionColors[faction] || '#666';
+        }
+
+        // Open expanded card view - COMPLETELY REWRITTEN
+        function openExpandedView(unit) {
+            const modal = document.getElementById('modalOverlay');
+            const expandedCard = document.getElementById('expandedCard');
+            
+            const factionColor = getFactionColor(unit.faction);
+            expandedCard.className = `expanded-card ${unit.rarity} ${unit.faction}`;
+            expandedCard.style.setProperty('--faction-color', factionColor);
+            
+            // Create legendary particles
+            let legendaryParticlesHtml = '';
+            if (unit.rarity === 'legendary') {
+                for (let i = 0; i < 8; i++) {
+                    legendaryParticlesHtml += `<div class="legendary-modal-particle" style="left: ${Math.random() * 100}%; animation-delay: ${Math.random() * 4}s;"></div>`;
+                }
+            }
+
+            expandedCard.innerHTML = `
+                ${unit.rarity === 'legendary' ? `<div class="legendary-modal-particles">${legendaryParticlesHtml}</div>` : ''}
+                
+                <button class="close-button" onclick="closeModal()">✕</button>
+                
+                <div class="faction-gradient-bar" style="background: linear-gradient(90deg, ${factionColor}, ${factionColor}80);"></div>
+                
+                <div class="modal-header">
+                    <div class="faction-emblem" style="border-color: ${factionColor};">
+                        ${roleIcons[unit.role] || '⚔️'}
+                    </div>
+                    <div class="role-badge" style="border-color: ${factionColor}; color: ${factionColor};">
+                        ${unit.role.replace(' ', ' ')}
+                    </div>
+                    <div class="modal-unit-name">${unit.name}</div>
+                    <div class="modal-points" style="color: ${factionColor};">${unit.points} POINTS</div>
+                    <div class="modal-rarity ${unit.rarity}" style="color: ${rarityColors[unit.rarity]};">
+                        ${unit.rarity === 'legendary' ? '★★★ LEGENDARY ★★★' : '★★★ ' + unit.rarity.toUpperCase() + ' ★★★'}
+                    </div>
+                </div>
+                
+                <div class="stats-container">
+                    <div class="radar-section">
+                        <div class="modal-radar-chart">
+                            <canvas id="modalRadarChart" width="200" height="200"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-bars-section">
+                        ${createModalStatBar('WAR', unit.war, 10)}
+                        ${createModalStatBar('RES', unit.res, 10)}
+                        ${createModalStatBar('VEL', unit.vel, 10)}
+                        ${createModalStatBar('ACC', unit.acc, 10)}
+                        ${createModalStatBar('DIS', unit.dis, 10)}
+                        ${createModalStatBar('INS', unit.ins, 10)}
+                        
+                        <div class="stats-total">
+                            TOTAL: ${unit.total}/60
+                            <div class="total-progress-bar">
+                                <div class="total-progress-fill" style="width: ${(unit.total/60) * 100}%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-section ability" style="--faction-color: ${factionColor};">
+                    <div class="modal-section-title">⚡ ABILITY</div>
+                    <div class="ability-name-full" style="color: ${factionColor};">${unit.abilities}</div>
+                    <div class="ability-description">${unit.ability_desc}</div>
+                </div>
+                
+                <div class="modal-section">
+                    <div class="modal-section-title">🛡️ EQUIPMENT</div>
+                    <div class="equipment-list">${formatEquipmentWithColors(unit.equipment)}</div>
+                </div>
+                
+                <div class="flavor-section">
+                    <div class="flavor-divider-top"></div>
+                    <div class="flavor-text">"${unit.flavor}"</div>
+                    <div class="flavor-divider-bottom"></div>
+                </div>
+                
+                <div class="modal-buttons" style="--faction-color: ${factionColor};">
+                    <button class="modal-button primary" onclick="addToArmy('${unit.name}')">Add to Army</button>
+                    <button class="modal-button" onclick="closeModal()">Close</button>
+                </div>
+            `;
+
+            modal.classList.add('active');
+
+            // Draw radar chart with delay for DOM rendering
+            setTimeout(() => drawModalRadarChart(unit), 100);
+            
+            // Animate stat bars
+            setTimeout(() => animateModalStatBars(), 200);
+        }
+
+        // Create modal stat bar
+        function createModalStatBar(label, value, max) {
+            const percentage = (value / max) * 100;
+            const statKey = label.toLowerCase();
+            
+            return `
+                <div class="modal-stat-bar">
+                    <div class="modal-stat-label ${statKey}">${label}</div>
+                    <div class="modal-stat-visual">
+                        <div class="modal-stat-fill ${statKey}" data-width="${percentage}" style="width: 0%;"></div>
+                    </div>
+                    <div class="modal-stat-number">${value}</div>
+                </div>
+            `;
+        }
+
+        // Format equipment with colored stat bonuses
+        function formatEquipmentWithColors(equipment) {
+            const statRegex = /\(\+(\d+)\s+(WAR|RES|VEL|ACC|DIS|INS)\)/gi;
+            
+            return equipment.split(',').map(item => {
+                const trimmed = item.trim();
+                return trimmed.replace(statRegex, (match, bonus, stat) => {
+                    const statKey = stat.toLowerCase();
+                    return `(<span class="stat-bonus ${statKey}">+${bonus} ${stat}</span>)`;
+                });
+            }).map(item => `<div class="equipment-item">• ${item}</div>`).join('');
+        }
+
+        // Animate modal stat bars
+        function animateModalStatBars() {
+            const statFills = document.querySelectorAll('.modal-stat-fill');
+            statFills.forEach((fill, index) => {
+                const targetWidth = fill.dataset.width + '%';
+                setTimeout(() => {
+                    fill.style.width = targetWidth;
+                }, index * 80);
+            });
+        }
+
+        // Draw modal radar chart
+        function drawModalRadarChart(unit) {
+            const canvas = document.getElementById('modalRadarChart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const centerX = 100;
+            const centerY = 100;
+            const radius = 80;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, 200, 200);
+            
+            // Stats data
+            const stats = [
+                { label: 'WAR', value: unit.war, color: statColors.war },
+                { label: 'RES', value: unit.res, color: statColors.res },
+                { label: 'VEL', value: unit.vel, color: statColors.vel },
+                { label: 'ACC', value: unit.acc, color: statColors.acc },
+                { label: 'DIS', value: unit.dis, color: statColors.dis },
+                { label: 'INS', value: unit.ins, color: statColors.ins }
+            ];
+            
+            const factionColor = getFactionColor(unit.faction);
+            
+            // Draw concentric hexagonal grid (3 levels)
+            ctx.strokeStyle = '#222';
+            ctx.lineWidth = 1;
+            for (let level = 1; level <= 3; level++) {
+                const levelRadius = (radius / 3) * level;
+                ctx.beginPath();
+                for (let i = 0; i < 6; i++) {
+                    const angle = (i * Math.PI * 2) / 6 - Math.PI / 2;
+                    const x = centerX + Math.cos(angle) * levelRadius;
+                    const y = centerY + Math.sin(angle) * levelRadius;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.closePath();
+                ctx.stroke();
+            }
+            
+            // Draw axes to vertices
+            ctx.strokeStyle = '#222';
+            for (let i = 0; i < 6; i++) {
+                ctx.beginPath();
+                const angle = (i * Math.PI * 2) / 6 - Math.PI / 2;
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(centerX + Math.cos(angle) * radius, centerY + Math.sin(angle) * radius);
+                ctx.stroke();
+            }
+            
+            // Draw data polygon
+            const useGoldForLegendary = unit.rarity === 'legendary';
+            const fillColor = useGoldForLegendary ? '#FFD700' : factionColor;
+            
+            ctx.fillStyle = fillColor + '40'; // 25% opacity
+            ctx.strokeStyle = fillColor;
+            ctx.lineWidth = 2;
+            
+            // Add glow effect
+            ctx.shadowColor = fillColor;
+            ctx.shadowBlur = 8;
+            
+            ctx.beginPath();
+            for (let i = 0; i < stats.length; i++) {
+                const angle = (i * Math.PI * 2) / 6 - Math.PI / 2;
+                const value = stats[i].value / 10; // Normalize to 0-1
+                const x = centerX + Math.cos(angle) * radius * value;
+                const y = centerY + Math.sin(angle) * radius * value;
+                
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Reset shadow
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            
+            // Draw stat labels at vertices
+            ctx.font = 'bold 11px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            for (let i = 0; i < stats.length; i++) {
+                const stat = stats[i];
+                const angle = (i * Math.PI * 2) / 6 - Math.PI / 2;
+                const labelRadius = radius + 25;
+                const x = centerX + Math.cos(angle) * labelRadius;
+                const y = centerY + Math.sin(angle) * labelRadius;
+                
+                ctx.fillStyle = stat.color;
+                ctx.fillText(stat.label, x, y);
+            }
+        }
+
+        // Close modal
+        function closeModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('modalOverlay').classList.remove('active');
+        }
+
+        // Toggle army builder
+        function toggleArmyBuilder() {
+            armyBuilderOpen = !armyBuilderOpen;
+            const armyBuilder = document.getElementById('armyBuilder');
+            armyBuilder.classList.toggle('active', armyBuilderOpen);
+            
+            if (armyBuilderOpen && audioContext) {
+                // Mechanical slide sound
+                playSound(200, 0.15);
+            }
+        }
+
+        // Add unit to army
+        function addToArmy(unitName) {
+            const unit = allUnits.find(u => u.name === unitName);
+            if (!unit || !unit.owned) return;
+            
+            selectedArmy.push(unit);
+            updateArmyDisplay();
+            updateArmyStats();
+            closeModal();
+        }
+
+        // Update army display
+        function updateArmyDisplay() {
+            const container = document.getElementById('armyUnits');
+            container.innerHTML = '';
+            
+            selectedArmy.forEach((unit, index) => {
+                const armyCard = document.createElement('div');
+                armyCard.className = 'army-unit-card';
+                armyCard.innerHTML = `
+                    <div style="font-size: 24px;">${roleIcons[unit.role]}</div>
+                    <div style="font-size: 10px; text-align: center; margin-top: 5px;">${unit.name}</div>
+                    <div style="font-size: 10px; color: #FFB300;">${unit.points} pts</div>
+                `;
+                
+                armyCard.addEventListener('click', () => {
+                    selectedArmy.splice(index, 1);
+                    updateArmyDisplay();
+                    updateArmyStats();
+                });
+                
+                container.appendChild(armyCard);
+            });
+        }
+
+        // Update army statistics
+        function updateArmyStats() {
+            const totalPoints = selectedArmy.reduce((sum, unit) => sum + unit.points, 0);
+            const pointsElement = document.getElementById('armyPoints');
+            const validationElement = document.getElementById('armyValidation');
+            
+            pointsElement.textContent = `${totalPoints} / ${currentPointCap} PTS`;
+            
+            // Validation
+            const hasHQ = selectedArmy.some(unit => unit.role === 'hq');
+            const troopsCount = selectedArmy.filter(unit => unit.role === 'troops').length;
+            const overLimit = totalPoints > currentPointCap;
+            
+            if (overLimit) {
+                pointsElement.className = 'army-stat error';
+                validationElement.textContent = '⚠ OVER LIMIT';
+                validationElement.className = 'army-stat error';
+            } else if (!hasHQ || troopsCount < 2) {
+                validationElement.textContent = '⚠ NEEDS HQ + 2 TROOPS';
+                validationElement.className = 'army-stat warning';
+                pointsElement.className = 'army-stat';
+            } else {
+                validationElement.textContent = '✓ VALID ARMY';
+                validationElement.className = 'army-stat';
+                pointsElement.className = 'army-stat';
+            }
+        }
+
+        // Export army
+        function exportArmy() {
+            const armyData = {
+                pointCap: currentPointCap,
+                totalPoints: selectedArmy.reduce((sum, unit) => sum + unit.points, 0),
+                units: selectedArmy.map(unit => ({
+                    name: unit.name,
+                    faction: unit.faction,
+                    role: unit.role,
+                    points: unit.points
+                }))
+            };
+            
+            const dataStr = JSON.stringify(armyData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'chain-of-war-army.json';
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Clear army
+        function clearArmy() {
+            selectedArmy = [];
+            updateArmyDisplay();
+            updateArmyStats();
+        }
+
+        // Add card enter animation CSS
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes cardEnter {
+                0% {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                100% {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initialize the application
+        init();
+    </script>
+</body>
+</html>
