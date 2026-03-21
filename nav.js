@@ -1,256 +1,503 @@
-// nav.js — Shared Navigation Bar for Chain of War
-// Include this in any Chain of War page to add the shared nav
+// nav.js — Chain of War Navigation & Loading Experience
+// Self-executing IIFE that injects navigation and loading splash
 
 (function() {
-    // Don't inject if nav already exists
-    if (document.getElementById('cow-nav')) return;
+    'use strict';
 
-    // Get current page for highlighting
-    const currentPage = window.location.pathname.split('/').pop() || 'landing.html';
-    
-    // Check admin state from localStorage
-    let adminState = null;
-    try {
-        adminState = JSON.parse(localStorage.getItem('cow_admin_state') || '{}');
-    } catch (e) {
-        adminState = {};
-    }
+    // Prevent multiple injections
+    if (document.getElementById('cow-nav') || document.getElementById('cow-loading-splash')) return;
 
-    // Navigation links configuration
-    const navLinks = [
-        { label: 'HOME', href: 'landing.html' },
-        { label: 'BATTLE', href: 'index.html' },
-        { label: 'DEATH MATCH', href: 'deathmatch.html' },
-        { label: 'TOURNAMENT', href: 'tournament.html' },
-        { label: 'WAR CHEST', href: 'warchest.html' },
-        { label: 'ARMORY', href: 'armory.html' },
-        { label: 'FORGE', href: 'forge.html' },
-        { label: 'MARKET', href: 'marketplace.html' },
-        { label: 'ECONOMY', href: 'economy.html' }
-    ];
+    // Loading Splash - plays once per session
+    function createLoadingSplash() {
+        const hasPlayed = sessionStorage.getItem('cow_splash_played');
+        if (hasPlayed) return;
 
-    // Add admin link if user has admin role
-    if (adminState.role === 'admin') {
-        navLinks.push({ label: 'ADMIN', href: 'admin.html' });
-    }
-
-    // Create navigation HTML
-    const navHTML = `
-        <nav id="cow-nav" style="
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 60px;
-            background: rgba(5, 5, 16, 0.9);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 24px;
-            border-bottom: 1px solid rgba(0, 229, 255, 0.1);
-        ">
-            <!-- Logo -->
-            <div style="display: flex; align-items: center;">
-                <img src="assets/logo.png" alt="Chain of War" style="
-                    height: 40px;
-                    mix-blend-mode: screen;
-                    filter: brightness(1.2);
-                ">
-            </div>
-
-            <!-- Desktop Navigation Links -->
-            <div id="nav-links" style="
+        const splashHTML = `
+            <div id="cow-loading-splash" style="
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: #050510;
+                z-index: 99999;
                 display: flex;
+                flex-direction: column;
+                justify-content: center;
                 align-items: center;
-                gap: 40px;
-                font-family: 'Arial', sans-serif;
-                font-size: 11px;
-                font-weight: 600;
-                letter-spacing: 3px;
-                text-transform: uppercase;
+                opacity: 1;
+                transition: opacity 0.4s ease;
             ">
-                ${navLinks.map(link => `
-                    <a href="${link.href}" style="
-                        color: ${currentPage === link.href ? '#00E5FF' : '#666'};
-                        text-decoration: none;
-                        transition: color 0.3s ease;
-                        position: relative;
-                    " 
-                    onmouseover="this.style.color='#00E5FF'"
-                    onmouseout="this.style.color='${currentPage === link.href ? '#00E5FF' : '#666'}'"
-                    >${link.label}</a>
-                `).join('')}
-            </div>
-
-            <!-- Wallet/Admin Info -->
-            <div style="display: flex; align-items: center; gap: 16px;">
-                ${adminState.walletAddress ? `
-                    <div style="
-                        font-family: 'Arial', sans-serif;
-                        font-size: 10px;
-                        color: #888;
-                        text-align: right;
-                    ">
-                        <div style="color: #FFD700; font-weight: bold;">
-                            $WAR: ${adminState.warBalance || '0.00'}
-                        </div>
-                        <div style="margin-top: 2px;">
-                            ${adminState.walletAddress.slice(0, 6)}...${adminState.walletAddress.slice(-4)}
-                        </div>
-                    </div>
-                ` : ''}
+                <img src="assets/logo.png" id="splash-logo" style="
+                    width: 200px;
+                    height: auto;
+                    opacity: 0;
+                    transition: opacity 0.5s ease;
+                    mix-blend-mode: screen;
+                " alt="Chain of War">
                 
-                <button id="wallet-connect" style="
+                <div id="progress-container" style="
+                    width: 300px;
+                    height: 2px;
+                    background: rgba(0, 229, 255, 0.2);
+                    margin-top: 40px;
+                    border-radius: 1px;
+                    overflow: hidden;
+                ">
+                    <div id="progress-bar" style="
+                        width: 0%;
+                        height: 100%;
+                        background: #00E5FF;
+                        transition: width 1.5s ease;
+                        border-radius: 1px;
+                    "></div>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', splashHTML);
+
+        // Animation sequence
+        setTimeout(() => {
+            document.getElementById('splash-logo').style.opacity = '1';
+            document.getElementById('progress-bar').style.width = '100%';
+        }, 50);
+
+        setTimeout(() => {
+            document.getElementById('cow-loading-splash').style.opacity = '0';
+            sessionStorage.setItem('cow_splash_played', 'true');
+            
+            setTimeout(() => {
+                const splash = document.getElementById('cow-loading-splash');
+                if (splash) splash.remove();
+            }, 400);
+        }, 1300); // 0.5s fade in + 0.8s hold = 1.3s
+    }
+
+    // Get current page for active highlighting
+    function getCurrentPage() {
+        const path = window.location.pathname;
+        const page = path.split('/').pop() || 'index.html';
+        return page.replace('.html', '');
+    }
+
+    // Get admin state from localStorage
+    function getAdminState() {
+        try {
+            return JSON.parse(localStorage.getItem('cow_admin_state') || '{}');
+        } catch (e) {
+            return {};
+        }
+    }
+
+    // Navigation configuration
+    function getNavConfig() {
+        const adminState = getAdminState();
+        
+        return {
+            groups: [
+                {
+                    label: 'PLAY',
+                    links: [
+                        { label: 'BATTLE', href: 'battle.html', page: 'battle' },
+                        { label: 'DEATH MATCH', href: 'deathmatch.html', page: 'deathmatch' },
+                        { label: 'TOURNAMENT', href: 'tournament.html', page: 'tournament' }
+                    ]
+                },
+                {
+                    label: 'COLLECT',
+                    links: [
+                        { label: 'WAR CHEST', href: 'warchest.html', page: 'warchest' },
+                        { label: 'ARMORY', href: 'armory.html', page: 'armory' },
+                        { label: 'FORGE', href: 'forge.html', page: 'forge' },
+                        { label: 'MARKET', href: 'market.html', page: 'market' }
+                    ]
+                },
+                {
+                    label: 'DATA',
+                    links: [
+                        { label: 'ECONOMY', href: 'economy.html', page: 'economy' }
+                    ]
+                }
+            ],
+            adminLink: adminState.role === 'admin' ? { label: 'ADMIN', href: 'admin.html', page: 'admin' } : null,
+            wallet: {
+                balance: '12,450 $WAR',
+                connected: adminState.walletAddress || false
+            }
+        };
+    }
+
+    // CSS Styles
+    function injectStyles() {
+        const styles = `
+            <style id="cow-nav-styles">
+                @keyframes slideInRight {
+                    from { transform: translateX(100%); }
+                    to { transform: translateX(0); }
+                }
+
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+
+                .cow-nav-link {
+                    font-family: system-ui, -apple-system, sans-serif;
+                    font-size: 11px;
+                    text-transform: uppercase;
+                    letter-spacing: 2px;
+                    color: #555;
+                    text-decoration: none;
+                    transition: color 0.2s ease;
+                    position: relative;
+                }
+
+                .cow-nav-link:hover {
+                    color: #00E5FF;
+                }
+
+                .cow-nav-link.active {
+                    color: #00E5FF;
+                }
+
+                .cow-nav-link.active::after {
+                    content: '';
+                    position: absolute;
+                    bottom: -8px;
+                    left: 0;
+                    right: 0;
+                    height: 2px;
+                    background: #00E5FF;
+                }
+
+                .cow-nav-group-label {
+                    font-family: system-ui, -apple-system, sans-serif;
+                    font-size: 9px;
+                    text-transform: uppercase;
+                    letter-spacing: 3px;
+                    color: #333;
+                    margin-bottom: 12px;
+                    font-weight: 600;
+                }
+
+                .cow-nav-group {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                }
+
+                .cow-nav-group-links {
+                    display: flex;
+                    gap: 24px;
+                }
+
+                .cow-hamburger {
+                    width: 24px;
+                    height: 18px;
+                    position: relative;
+                    cursor: pointer;
+                    display: none;
+                }
+
+                .cow-hamburger span {
+                    display: block;
+                    position: absolute;
+                    height: 2px;
+                    width: 100%;
+                    background: #00E5FF;
+                    border-radius: 1px;
+                    opacity: 1;
+                    left: 0;
+                    transform: rotate(0deg);
+                    transition: 0.25s ease-in-out;
+                }
+
+                .cow-hamburger span:nth-child(1) { top: 0px; }
+                .cow-hamburger span:nth-child(2) { top: 8px; }
+                .cow-hamburger span:nth-child(3) { top: 16px; }
+
+                .cow-hamburger.open span:nth-child(1) {
+                    top: 8px;
+                    transform: rotate(135deg);
+                }
+
+                .cow-hamburger.open span:nth-child(2) {
+                    opacity: 0;
+                    left: -60px;
+                }
+
+                .cow-hamburger.open span:nth-child(3) {
+                    top: 8px;
+                    transform: rotate(-135deg);
+                }
+
+                .cow-wallet-pill {
+                    background: rgba(255, 215, 0, 0.1);
+                    border: 1px solid rgba(255, 215, 0, 0.3);
+                    border-radius: 20px;
+                    padding: 8px 16px;
+                    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+                    font-size: 12px;
+                    color: #FFD700;
+                    font-weight: 600;
+                }
+
+                .cow-connect-button {
                     background: transparent;
                     border: 1px solid #00E5FF;
                     color: #00E5FF;
                     padding: 8px 16px;
                     border-radius: 20px;
-                    font-size: 10px;
+                    font-size: 11px;
                     font-weight: 600;
                     letter-spacing: 1px;
                     text-transform: uppercase;
                     cursor: pointer;
-                    transition: all 0.3s ease;
-                    font-family: 'Arial', sans-serif;
-                "
-                onmouseover="this.style.background='#00E5FF'; this.style.color='#000'"
-                onmouseout="this.style.background='transparent'; this.style.color='#00E5FF'"
-                >${adminState.walletAddress ? 'DISCONNECT' : 'CONNECT WALLET'}</button>
+                    transition: all 0.2s ease;
+                    font-family: system-ui, -apple-system, sans-serif;
+                }
+
+                .cow-connect-button:hover {
+                    background: #00E5FF;
+                    color: #000;
+                }
+
+                .cow-admin-link {
+                    font-family: system-ui, -apple-system, sans-serif;
+                    font-size: 9px;
+                    color: #666;
+                    text-decoration: none;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                    margin-left: 20px;
+                }
+
+                @media (max-width: 768px) {
+                    .cow-nav-desktop {
+                        display: none !important;
+                    }
+                    
+                    .cow-hamburger {
+                        display: block !important;
+                    }
+                    
+                    .cow-wallet-pill {
+                        display: none !important;
+                    }
+                }
+            </style>
+        `;
+        document.head.insertAdjacentHTML('beforeend', styles);
+    }
+
+    // Create desktop navigation
+    function createDesktopNav(config, currentPage) {
+        const groupsHTML = config.groups.map(group => `
+            <div class="cow-nav-group">
+                <div class="cow-nav-group-label">${group.label}</div>
+                <div class="cow-nav-group-links">
+                    ${group.links.map(link => `
+                        <a href="${link.href}" class="cow-nav-link ${currentPage === link.page ? 'active' : ''}">
+                            ${link.label}
+                        </a>
+                    `).join('')}
+                </div>
             </div>
+        `).join('');
 
-            <!-- Mobile Menu Button -->
-            <button id="mobile-menu-btn" style="
-                display: none;
-                background: none;
-                border: none;
-                color: #00E5FF;
-                font-size: 20px;
-                cursor: pointer;
-                padding: 8px;
-            " onclick="toggleMobileMenu()">☰</button>
+        return `
+            <div class="cow-nav-desktop" style="display: flex; align-items: center; gap: 48px;">
+                ${groupsHTML}
+            </div>
+        `;
+    }
 
-            <!-- Mobile Menu Overlay -->
-            <div id="mobile-menu" style="
+    // Create mobile overlay menu
+    function createMobileMenu(config, currentPage) {
+        const allLinks = config.groups.flatMap(group => 
+            group.links.map(link => ({...link, group: group.label}))
+        );
+
+        return `
+            <div id="cow-mobile-menu" style="
                 position: fixed;
                 top: 0;
                 right: -100%;
-                width: 280px;
+                width: 100vw;
                 height: 100vh;
-                background: rgba(5, 5, 16, 0.98);
-                backdrop-filter: blur(20px);
-                -webkit-backdrop-filter: blur(20px);
+                background: #050510;
+                z-index: 50000;
                 transition: right 0.3s ease;
-                z-index: 10001;
-                padding: 80px 24px 24px 24px;
-                border-left: 1px solid rgba(0, 229, 255, 0.2);
+                overflow-y: auto;
+                padding: 80px 0 40px 0;
             ">
-                <button style="
-                    position: absolute;
-                    top: 20px;
-                    right: 20px;
-                    background: none;
-                    border: none;
-                    color: #00E5FF;
-                    font-size: 24px;
-                    cursor: pointer;
-                " onclick="toggleMobileMenu()">×</button>
-                
                 <div style="
                     display: flex;
                     flex-direction: column;
-                    gap: 24px;
-                    font-family: 'Arial', sans-serif;
+                    align-items: center;
+                    max-width: 300px;
+                    margin: 0 auto;
+                    padding: 0 20px;
                 ">
-                    ${navLinks.map(link => `
-                        <a href="${link.href}" style="
-                            color: ${currentPage === link.href ? '#00E5FF' : '#888'};
-                            text-decoration: none;
-                            font-size: 14px;
-                            font-weight: 600;
-                            letter-spacing: 2px;
-                            text-transform: uppercase;
-                            padding: 12px 0;
-                            border-bottom: 1px solid rgba(255,255,255,0.1);
-                        ">${link.label}</a>
-                    `).join('')}
-                    
-                    ${adminState.walletAddress ? `
+                    ${config.groups.map(group => `
                         <div style="
-                            margin-top: 24px;
-                            padding: 16px;
-                            background: rgba(0, 229, 255, 0.1);
-                            border-radius: 8px;
-                            font-size: 12px;
-                            color: #888;
+                            width: 100%;
+                            margin-bottom: 40px;
+                            text-align: center;
                         ">
-                            <div style="color: #FFD700; font-weight: bold; margin-bottom: 4px;">
-                                $WAR: ${adminState.warBalance || '0.00'}
-                            </div>
-                            <div>
-                                ${adminState.walletAddress.slice(0, 8)}...${adminState.walletAddress.slice(-6)}
+                            <div class="cow-nav-group-label" style="
+                                margin-bottom: 20px;
+                                color: #00E5FF;
+                                font-size: 10px;
+                            ">${group.label}</div>
+                            <div style="
+                                border-bottom: 1px solid rgba(0, 229, 255, 0.1);
+                                padding-bottom: 20px;
+                            ">
+                                ${group.links.map(link => `
+                                    <a href="${link.href}" style="
+                                        display: block;
+                                        color: ${currentPage === link.page ? '#00E5FF' : '#888'};
+                                        text-decoration: none;
+                                        font-family: system-ui, -apple-system, sans-serif;
+                                        font-size: 14px;
+                                        font-weight: 600;
+                                        letter-spacing: 2px;
+                                        text-transform: uppercase;
+                                        padding: 12px 0;
+                                        transition: color 0.2s ease;
+                                    " onclick="window.cowNavToggleMobile()">${link.label}</a>
+                                `).join('')}
                             </div>
                         </div>
+                    `).join('')}
+                    
+                    <div class="cow-wallet-pill" style="
+                        display: block !important;
+                        margin-top: 20px;
+                    ">${config.wallet.balance}</div>
+                    
+                    <button class="cow-connect-button" style="
+                        margin-top: 16px;
+                    " onclick="window.cowNavConnect()">CONNECT</button>
+                    
+                    ${config.adminLink ? `
+                        <a href="${config.adminLink.href}" class="cow-admin-link" style="
+                            margin: 20px 0 0 0;
+                        " onclick="window.cowNavToggleMobile()">${config.adminLink.label}</a>
                     ` : ''}
                 </div>
             </div>
-        </nav>
-    `;
+        `;
+    }
 
-    // Add mobile styles
-    const mobileStyles = `
-        <style>
-            @media (max-width: 768px) {
-                #nav-links {
-                    display: none !important;
-                }
-                #mobile-menu-btn {
-                    display: block !important;
-                }
-            }
-        </style>
-    `;
+    // Create navigation
+    function createNavigation() {
+        const config = getNavConfig();
+        const currentPage = getCurrentPage();
 
-    // Insert navigation and styles
-    document.head.insertAdjacentHTML('beforeend', mobileStyles);
-    document.body.insertAdjacentHTML('afterbegin', navHTML);
+        const navHTML = `
+            <nav id="cow-nav" style="
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 56px;
+                background: rgba(5, 5, 16, 0.92);
+                backdrop-filter: blur(16px);
+                -webkit-backdrop-filter: blur(16px);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 24px;
+                animation: fadeIn 0.3s ease;
+            ">
+                <!-- Logo -->
+                <div style="display: flex; align-items: center;">
+                    <img src="assets/logo.png" alt="Chain of War" style="
+                        height: 36px;
+                        mix-blend-mode: screen;
+                    ">
+                </div>
 
-    // Add body padding to account for fixed nav
-    document.body.style.paddingTop = '60px';
+                <!-- Desktop Navigation -->
+                ${createDesktopNav(config, currentPage)}
 
-    // Mobile menu toggle function
-    window.toggleMobileMenu = function() {
-        const mobileMenu = document.getElementById('mobile-menu');
-        const isOpen = mobileMenu.style.right === '0px';
-        mobileMenu.style.right = isOpen ? '-100%' : '0px';
+                <!-- Right Section -->
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <div class="cow-wallet-pill">${config.wallet.balance}</div>
+                    <button class="cow-connect-button" onclick="window.cowNavConnect()">CONNECT</button>
+                    ${config.adminLink ? `
+                        <a href="${config.adminLink.href}" class="cow-admin-link">${config.adminLink.label}</a>
+                    ` : ''}
+                    
+                    <!-- Mobile Hamburger -->
+                    <div class="cow-hamburger" onclick="window.cowNavToggleMobile()">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </nav>
+
+            ${createMobileMenu(config, currentPage)}
+        `;
+
+        return navHTML;
+    }
+
+    // Global functions
+    window.cowNavToggleMobile = function() {
+        const menu = document.getElementById('cow-mobile-menu');
+        const hamburger = document.querySelector('.cow-hamburger');
+        const isOpen = menu.style.right === '0px';
+        
+        menu.style.right = isOpen ? '-100%' : '0px';
+        hamburger.classList.toggle('open', !isOpen);
     };
 
-    // Wallet connect simulation
-    document.getElementById('wallet-connect').addEventListener('click', function() {
-        if (adminState.walletAddress) {
-            // Disconnect
-            localStorage.removeItem('cow_admin_state');
-            location.reload();
-        } else {
-            // Simulate wallet connection
-            const mockWallet = {
-                walletAddress: '0x' + Math.random().toString(16).substring(2, 42).padStart(40, '0'),
-                warBalance: (Math.random() * 10000).toFixed(2),
-                role: Math.random() > 0.8 ? 'admin' : 'player'
-            };
-            localStorage.setItem('cow_admin_state', JSON.stringify(mockWallet));
-            location.reload();
-        }
-    });
+    window.cowNavConnect = function() {
+        // Simulate wallet connection
+        alert('Wallet connection simulated');
+    };
 
-    // Close mobile menu on link click
-    document.querySelectorAll('#mobile-menu a').forEach(link => {
-        link.addEventListener('click', () => {
-            document.getElementById('mobile-menu').style.right = '-100%';
+    // Initialize everything
+    function init() {
+        // Add loading splash first
+        createLoadingSplash();
+        
+        // Wait for DOM to be ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initNav);
+        } else {
+            initNav();
+        }
+    }
+
+    function initNav() {
+        // Inject styles
+        injectStyles();
+        
+        // Create and inject navigation
+        document.body.insertAdjacentHTML('afterbegin', createNavigation());
+        
+        // Add body padding to account for fixed nav
+        document.body.style.paddingTop = '56px';
+        
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('cow-mobile-menu');
+            const hamburger = document.querySelector('.cow-hamburger');
+            
+            if (menu && !menu.contains(e.target) && !hamburger.contains(e.target) && menu.style.right === '0px') {
+                window.cowNavToggleMobile();
+            }
         });
-    });
+    }
+
+    // Start initialization
+    init();
 
 })();
