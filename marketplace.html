@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chain of War — Marketplace</title>
+    <link rel="stylesheet" href="design-system.css">
+    <style>
+        /* Marketplace-specific styles */
+        .marketplace-container {
+            background: var(--cow-bg-deep);
+            min-height: 100vh;
+            color: #ffffff;
+            padding-top: 60px;
+        }
+
+        .marketplace-header {
+            background: linear-gradient(135deg, var(--cow-bg-dark) 0%, var(--cow-bg-panel) 100%);
+            border-bottom: 1px solid rgba(0, 229, 255, 0.1);
+            padding: 20px;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .marketplace-title {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--cow-cyan);
+        }
+
+        .wallet-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            color: #ffffff;
+        }
+
+        .wallet-address {
+            color: var(--cow-cyan);
+            font-family: monospace;
+        }
+
+        .war-balance {
+            color: var(--cow-gold);
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .marketplace-tabs {
+            display: flex;
+            gap: 0;
+            background: var(--cow-bg-card);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .tab-button {
+            background: none;
+            border: none;
+            padding: 12px 24px;
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tab-button:last-child {
+            border-right: none;
+        }
+
+        .tab-button.active {
+            background: var(--cow-cyan);
+            color: #000000;
+        }
+
+        .tab-button:hover:not(.active) {
+            background: var(--cow-cyan-dim);
+        }
+
+        .marketplace-stats {
+            display: flex;
+            gap: 20px;
+            background: var(--cow-bg-card);
+            padding: 16px;
+            border-radius: 8px;
+            margin: 20px;
+        }
+
+        .stat-item {
+            flex: 1;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--cow-gold);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #cccccc;
+            text-transform: uppercase;
+        }
+
+        .marketplace-content {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .filters-sidebar {
+            width: 280px;
+            background: var(--cow-bg-card);
+            border-radius: 8px;
+            padding: 20px;
+            height: fit-content;
+        }
+
+        .filter-section {
+            margin-bottom: 24px;
+        }
+
+        .filter-title {
+            color: var(--cow-cyan);
+            font-weight: bold;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+
+        .filter-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+
+        .filter-checkbox input {
+            accent-color: var(--cow-cyan);
+        }
+
+        .filter-checkbox label {
+            color: #ffffff;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .price-range {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .price-inputs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .price-inputs input {
+            flex: 1;
+            background: var(--cow-bg-dark);
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            border-radius: 4px;
+            padding: 8px;
+            color: #ffffff;
+            font-size: 14px;
+        }
+
+        .sort-select {
+            width: 100%;
+            background: var(--cow-bg-dark);
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            border-radius: 4px;
+            padding: 8px;
+            color: #ffffff;
+            font-size: 14px;
+        }
+
+        .listings-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .listing-card {
+            background: var(--cow-bg-card);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+
+        .listing-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 229, 255, 0.2);
+        }
+
+        .unit-card-preview {
+            position: relative;
+            height: 200px;
+            background: linear-gradient(135deg, var(--faction-iron-primary), var(--faction-iron-accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .rarity-border {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+        }
+
+        .rarity-common { border: 3px solid #808080; }
+        .rarity-uncommon { border: 3px solid #00FF00; }
+        .rarity-rare { border: 3px solid #0080FF; }
+        .rarity-epic { border: 3px solid #8000FF; }
+        .rarity-legendary { border: 3px solid #FF8000; }
+
+        .unit-info {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .unit-name {
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .unit-stats {
+            display: flex;
+            gap: 8px;
+            font-size: 10px;
+        }
+
+        .listing-details {
+            padding: 16px;
+        }
+
+        .seller-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 12px;
+            color: #cccccc;
+        }
+
+        .price-info {
+            margin-bottom: 16px;
+        }
+
+        .war-price {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--cow-gold);
+        }
+
+        .eth-price {
+            font-size: 12px;
+            color: #888888;
+        }
+
+        .buy-button {
+            width: 100%;
+            background: var(--cow-cyan);
+            color: #000000;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .buy-button:hover {
+            background: #00D4EA;
+        }
+
+        .battle-badge {
+            background: linear-gradient(45deg, #FF6B35, #F7931E);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .blooded-badge {
+            background: linear-gradient(45deg, #8B0000, #FF0000);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .activity-feed {
+            max-height: 500px;
+            overflow-y: auto;
+            background: var(--cow-bg-card);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .activity-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-text {
+            flex: 1;
+        }
+
+        .activity-time {
+            color: #888888;
+            font-size: 12px;
+        }
+
+        .unit-detail-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .modal-content {
+            background: var(--cow-bg-card);
+            border-radius: 12px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 30px;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .price-history-chart {
+            height: 200px;
+            background: var(--cow-bg-dark);
+            border-radius: 8px;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .my-listings-grid {
+            display: none;
+        }
+
+        .my-listings-grid.active {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .list-unit-button {
+            background: var(--cow-gold);
+            color: #000000;
+            border: none;
+            padding: 16px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .edit-listing-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .edit-price-btn, .cancel-listing-btn {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .edit-price-btn {
+            background: var(--cow-cyan);
+            color: #000000;
+        }
+
+        .cancel-listing-btn {
+            background: var(--cow-red);
+            color: #ffffff;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .badges-container {
+            display: flex;
+            gap: 4px;
+            margin-top: 4px;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="marketplace-container">
+        <header class="marketplace-header">
+            <div class="header-top">
+                <div class="marketplace-title">
+                    <img src="assets/logo.png" alt="Chain of War" style="height: 32px;">
+                    CHAIN OF WAR — MARKETPLACE
+                </div>
+                <div class="wallet-info">
+                    <span class="wallet-address">0x1a2b...9f0e</span>
+                    <span class="war-balance">$WAR Balance: 12,450</span>
+                </div>
+            </div>
+            <div class="marketplace-tabs">
+                <button class="tab-button" data-tab="my-listings">MY LISTINGS</button>
+                <button class="tab-button active" data-tab="browse-all">BROWSE ALL</button>
+                <button class="tab-button" data-tab="activity">ACTIVITY</button>
+            </div>
+        </header>
+
+        <div class="marketplace-stats">
+            <div class="stat-item">
+                <div class="stat-value">2,847</div>
+                <div class="stat-label">Total Listings</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">156,320</div>
+                <div class="stat-label">24H Volume ($WAR)</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">47.5</div>
+                <div class="stat-label">Average Sale Price</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">15</div>
+                <div class="stat-label">Iron Floor</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">25</div>
+                <div class="stat-label">Swarm Floor</div>
+            </div>
+        </div>
+
+        <div class="marketplace-content">
+            <!-- Browse All Content -->
+            <div id="browse-all-content" class="browse-content">
+                <aside class="filters-sidebar">
+                    <div class="filter-section">
+                        <div class="filter-title">Faction</div>
+                        <div class="filter-checkbox">
+                            <input type="checkbox" id="faction-iron" data-faction="iron">
+                            <label for="faction-iron">Iron Covenant</label>
+                        </div>
+                        <div class="filter-checkbox">
+                            <input type="checkbox" id="faction-swarm" data-faction="swarm">
+                            <label for="faction-swarm">Swarm of Xeth</label>
+                        </div>
+                        <div class="filter-checkbox">
+                            <input type="checkbox" id="faction-void" data-faction="void">
+                            <label for="faction-void">Void Pharaohs</label>
+                        </div>
+                        <div class="filter-checkbox">
+                            <input type="checkbox" id="faction-emerald" data-faction="emerald">
+                            <label for="faction-emerald">Emerald Tide</label>
+                        </div>
+                        <div class="filter-checkbox">
+                            <input type="checkbox" id="faction-celestial" data-faction="celestial">
+                            <label for="faction-celestial">Celestial Order</label>
+                        </div>
+                    </div>
+
+                    <div class="filter-section">
+                        <div class="filter-title">Role</div>
+                        <div class="filter-checkbox">
+                            <input type="checkbox" id="role-hq" data-role="hq">
+                            <label for="role-hq">HQ</label>
+                        </div>
+                        <div class="filter-checkbox">
+                            <input type="checkbox" id="role-troops" data-role="troops">
+                            <label for="role-troops">Troops</label>
+                        </div>
+                        <div class="filter-checkbox">
+                            <input type="checkbox" id="role-elites" data-role="elites">
+                            <label for="role-elites">Elites</label>
+                        </div>
+                        <div class="filter-checkbox">
+                            <input type="checkbox" id="role-fast" data-role="fast">
+                            <label for="role-fast">Fast Attack</label>
+                        </div>
+                        <div class="filter-checkbox">
+                            <input type="checkbox" id="role-heavy" data-role="heavy">
+                            <label for="role-heavy">Heavy Support</label>
+                        </div>
+                    </div>
+
+                    <div class="filter-section">
+                        <div class="filter-title">Rarity</div>
+                        <div class="filter-checkbox">
+                            <input type="checkbox" id="rarity-common" data-rarity="common">
+                            <label for="rarity-common">Common</label>
+                        </div>
+                        <div class="filter-checkbox">
+                            <input type="checkbox" id="rarity-uncommon" data-rarity="uncommon">
+                            <label for="rarity-uncommon">Uncommon</label>
+                        </div>
+                        <div class="filter-checkbox">
+                            <input type="checkbox" id="rarity-rare" data-rarity="rare">
+                            <label for="rarity-rare">Rare</label>
+                        </div>
+                        <div class="filter-checkbox">
+                            <input type="checkbox" id="rarity-epic" data-rarity="epic">
+                            <label for="rarity-epic">Epic</label>
+                        </div>
+                        <div class="filter-checkbox">
+                            <input type="checkbox" id="rarity-legendary" data-rarity="legendary">
+                            <label for="rarity-legendary">Legendary</label>
+                        </div>
+                    </div>
+
+                    <div class="filter-section">
+                        <div class="filter-title">Price Range ($WAR)</div>
+                        <div class="price-range">
+                            <div class="price-inputs">
+                                <input type="number" placeholder="Min" id="price-min">
+                                <input type="number" placeholder="Max" id="price-max">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filter-section">
+                        <div class="filter-title">Sort By</div>
+                        <select class="sort-select" id="sort-select">
+                            <option value="price-low">Price: Low to High</option>
+                            <option value="price-high">Price: High to Low</option>
+                            <option value="recent">Recently Listed</option>
+                            <option value="battles">Most Battles</option>
+                            <option value="stats">Highest Stats</option>
+                        </select>
+                    </div>
+                </aside>
+
+                <div class="listings-grid" id="listings-grid">
+                    <!-- Listings will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- My Listings Content -->
+            <div id="my-listings-content" class="hidden" style="flex: 1;">
+                <button class="list-unit-button" onclick="listNewUnit()">+ LIST A UNIT</button>
+                <div class="my-listings-grid" id="my-listings-grid">
+                    <!-- My listings will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Activity Content -->
+            <div id="activity-content" class="hidden" style="flex: 1;">
+                <div class="activity-feed" id="activity-feed">
+                    <!-- Activity will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unit Detail Modal -->
+    <div class="unit-detail-modal" id="unit-detail-modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeUnitDetail()">&times;</button>
+            <div id="modal-unit-content">
+                <!-- Unit detail content will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script src="nav.js"></script>
+    <script>
+        // Game data and state
+        const factionGradients = {
+            iron: ['#8A8A8A', '#B87333'],
+            swarm: ['#4A148C', '#C6FF00'],
+            void: ['#1A1A2E', '#FFB300'],
+            emerald: ['#BF360C', '#FFD600'],
+            celestial: ['#2A2A3A', '#00BFA5']
+        };
+
+        const unitNames = {
+            iron: ['Iron Centurion', 'Covenant Guard', 'Steel Brothers', 'Iron Militia', 'Aegis Terminators'],
+            swarm: ['Hive Queen', 'Skitterling Brood', 'Venom Spitters', 'Swarm Warriors', 'Bio-Titan'],
+            void: ['Void Pharaoh', 'Death Guard', 'Wraith Walkers', 'Soul Reapers', 'Necro Titan'],
+            emerald: ['Tide Master', 'Coral Guards', 'Wave Riders', 'Sea Spawn', 'Leviathan'],
+            celestial: ['Angel Commander', 'Seraph Guard', 'Light Bearers', 'Star Knights', 'Celestial Avatar']
+        };
+
+        const roles = ['HQ', 'Troops', 'Elites', 'Fast Attack', 'Heavy Support'];
+        const rarities = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
+
+        // Generate marketplace listings
+        let marketplaceListings = [];
+        let userBalance = 12450;
+        let userListings = [];
+
+        function generateRandomUnit() {
+            const factions = Object.keys(factionGradients);
+            const faction = factions[Math.floor(Math.random() * factions.length)];
+            const rarity = rarities[Math.floor(Math.random() * rarities.length)];
+            const role = roles[Math.floor(Math.random() * roles.length)];
+            const unitNamesForFaction = unitNames[faction];
+            const name = unitNamesForFaction[Math.floor(Math.random() * unitNamesForFaction.length)];
+            
+            // Price ranges based on rarity
+            const priceRanges = {
+                common: [5, 30],
+                uncommon: [15, 80],
+                rare: [50, 200],
+                epic: [150, 600],
+                legendary: [500, 3000]
+            };
+            
+            const [min, max] = priceRanges[rarity];
+            const price = Math.floor(Math.random() * (max - min + 1)) + min;
+            const ethPrice = (price * 0.0012).toFixed(4); // Mock ETH conversion
+            
+            // Random stats
+            const stats = {
+                war: Math.floor(Math.random() * 9) + 1,
+                res: Math.floor(Math.random() * 9) + 1,
+                vel: Math.floor(Math.random() * 9) + 1,
+                acc: Math.floor(Math.random() * 9) + 1,
+                dis: Math.floor(Math.random() * 9) + 1,
+                ins: Math.floor(Math.random() * 9) + 1
+            };
+            
+            // Battle history for some units
+            const hasBattleHistory = Math.random() > 0.7;
+            const battles = hasBattleHistory ? Math.floor(Math.random() * 100) + 1 : 0;
+            const wins = battles > 0 ? Math.floor(battles * (0.3 + Math.random() * 0.4)) : 0;
+            
+            // Blooded status for death match survivors
+            const isBlooded = Math.random() > 0.95;
+            
+            return {
+                id: Math.random().toString(36).substr(2, 9),
+                name,
+                faction,
+                role,
+                rarity,
+                price,
+                ethPrice,
+                stats,
+                seller: '0x' + Math.random().toString(16).substr(2, 8) + '...' + Math.random().toString(16).substr(2, 4),
+                timeAgo: generateTimeAgo(),
+                battles,
+                wins,
+                isBlooded,
+                priceHistory: generatePriceHistory(price)
+            };
+        }
+
+        function generateTimeAgo() {
+            const timeOptions = ['2h ago', '5h ago', '1d ago', '2d ago', '3d ago', '1w ago', '2w ago'];
+            return timeOptions[Math.floor(Math.random() * timeOptions.length)];
+        }
+
+        function generatePriceHistory(currentPrice) {
+            const history = [];
+            let price = currentPrice * (0.8 + Math.random() * 0.4); // Start at ±20% of current
+            
+            for (let i = 0; i < 30; i++) {
+                history.push(Math.round(price));
+                price += (Math.random() - 0.5) * price * 0.1; // ±10% fluctuation
+                price = Math.max(1, price); // Don't go below 1
+            }
+            
+            history[history.length - 1] = currentPrice; // End at current price
+            return history;
+        }
+
+        // Generate 60 listings
+        for (let i = 0; i < 60; i++) {
+            marketplaceListings.push(generateRandomUnit());
+        }
+
+        // Generate activity feed
+        const activityFeed = [];
+        for (let i = 0; i < 25; i++) {
+            const unit = generateRandomUnit();
+            const actions = ['sold', 'listed'];
+            const action = actions[Math.floor(Math.random() * actions.length)];
+            activityFeed.push({
+                unitName: unit.name,
+                rarity: unit.rarity,
+                action,
+                price: unit.price,
+                timeAgo: generateTimeAgo()
+            });
+        }
+
+        // Generate some user listings
+        for (let i = 0; i < 3; i++) {
+            const unit = generateRandomUnit();
+            unit.isUserListing = true;
+            userListings.push(unit);
+        }
+
+        // Sound system
+        let audioContext;
+        
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(frequency, duration, type = 'sine') {
+            initAudio();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+            oscillator.type = type;
+            
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration);
+        }
+
+        function playPurchaseSound() {
+            playSound(523, 0.2); // C5
+            setTimeout(() => playSound(659, 0.2), 100); // E5
+            setTimeout(() => playSound(784, 0.3), 200); // G5
+        }
+
+        function playListingSound() {
+            playSound(440, 0.15); // A4
+            setTimeout(() => playSound(523, 0.15), 75); // C5
+        }
+
+        // Render functions
+        function renderListingCard(unit) {
+            const gradient = `linear-gradient(135deg, ${factionGradients[unit.faction][0]}, ${factionGradients[unit.faction][1]})`;
+            const statsTotal = Object.values(unit.stats).reduce((a, b) => a + b, 0);
+            
+            let badges = '';
+            if (unit.battles > 0) {
+                badges += `<span class="battle-badge">${unit.battles} battles, ${unit.wins} wins</span>`;
+            }
+            if (unit.isBlooded) {
+                badges += `<span class="blooded-badge">BLOODED</span>`;
+            }
+
+            return `
+                <div class="listing-card" onclick="showUnitDetail('${unit.id}')">
+                    <div class="unit-card-preview" style="background: ${gradient}">
+                        <div class="rarity-border rarity-${unit.rarity}"></div>
+                        <div class="unit-info">
+                            <div class="unit-name">${unit.name}</div>
+                            <div class="unit-stats">
+                                <span>WAR:${unit.stats.war}</span>
+                                <span>RES:${unit.stats.res}</span>
+                                <span>VEL:${unit.stats.vel}</span>
+                                <span>Total:${statsTotal}</span>
+                            </div>
+                            ${badges ? `<div class="badges-container">${badges}</div>` : ''}
+                        </div>
+                    </div>
+                    <div class="listing-details">
+                        <div class="seller-info">
+                            <span>Seller: ${unit.seller}</span>
+                            <span>${unit.timeAgo}</span>
+                        </div>
+                        <div class="price-info">
+                            <div class="war-price">${unit.price} $WAR</div>
+                            <div class="eth-price">${unit.ethPrice} ETH</div>
+                        </div>
+                        <button class="buy-button" onclick="event.stopPropagation(); buyUnit('${unit.id}')">
+                            BUY NOW
+                        </button>
+                        ${unit.isUserListing ? `
+                        <div class="edit-listing-buttons">
+                            <button class="edit-price-btn" onclick="event.stopPropagation(); editPrice('${unit.id}')">EDIT PRICE</button>
+                            <button class="cancel-listing-btn" onclick="event.stopPropagation(); cancelListing('${unit.id}')">CANCEL</button>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderListings() {
+            const grid = document.getElementById('listings-grid');
+            grid.innerHTML = marketplaceListings.map(renderListingCard).join('');
+        }
+
+        function renderMyListings() {
+            const grid = document.getElementById('my-listings-grid');
+            grid.innerHTML = userListings.map(renderListingCard).join('');
+        }
+
+        function renderActivity() {
+            const feed = document.getElementById('activity-feed');
+            feed.innerHTML = activityFeed.map(activity => `
+                <div class="activity-item">
+                    <div class="activity-text">
+                        <strong>${activity.unitName}</strong> 
+                        <span class="rarity-${activity.rarity}">(${activity.rarity})</span> 
+                        ${activity.action} for <strong>${activity.price} $WAR</strong>
+                    </div>
+                    <div class="activity-time">${activity.timeAgo}</div>
+                </div>
+            `).join('');
+        }
+
+        // Tab switching
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+
+            // Hide all content
+            document.getElementById('browse-all-content').classList.toggle('hidden', tabName !== 'browse-all');
+            document.getElementById('my-listings-content').classList.toggle('hidden', tabName !== 'my-listings');
+            document.getElementById('activity-content').classList.toggle('hidden', tabName !== 'activity');
+
+            // Load content based on tab
+            if (tabName === 'my-listings') {
+                renderMyListings();
+            } else if (tabName === 'activity') {
+                renderActivity();
+            }
+        }
+
+        // Unit actions
+        function buyUnit(unitId) {
+            const unit = marketplaceListings.find(u => u.id === unitId) || userListings.find(u => u.id === unitId);
+            if (!unit) return;
+
+            if (userBalance >= unit.price) {
+                userBalance -= unit.price;
+                document.querySelector('.war-balance').textContent = `$WAR Balance: ${userBalance.toLocaleString()}`;
+                
+                // Remove from marketplace
+                marketplaceListings = marketplaceListings.filter(u => u.id !== unitId);
+                userListings = userListings.filter(u => u.id !== unitId);
+                
+                // Add to activity
+                activityFeed.unshift({
+                    unitName: unit.name,
+                    rarity: unit.rarity,
+                    action: 'purchased',
+                    price: unit.price,
+                    timeAgo: 'just now'
+                });
+
+                playPurchaseSound();
+                renderListings();
+                renderMyListings();
+                
+                alert(`Successfully purchased ${unit.name} for ${unit.price} $WAR!`);
+            } else {
+                alert('Insufficient $WAR balance!');
+            }
+        }
+
+        function editPrice(unitId) {
+            const newPrice = prompt('Enter new price in $WAR:');
+            if (newPrice && !isNaN(newPrice) && newPrice > 0) {
+                const unit = userListings.find(u => u.id === unitId);
+                if (unit) {
+                    unit.price = parseInt(newPrice);
+                    unit.ethPrice = (unit.price * 0.0012).toFixed(4);
+                    renderMyListings();
+                    alert(`Price updated to ${newPrice} $WAR`);
+                }
+            }
+        }
+
+        function cancelListing(unitId) {
+            if (confirm('Cancel this listing?')) {
+                userListings = userListings.filter(u => u.id !== unitId);
+                renderMyListings();
+                alert('Listing cancelled');
+            }
+        }
+
+        function listNewUnit() {
+            alert('Collection picker would open here - this is a prototype!');
+        }
+
+        function showUnitDetail(unitId) {
+            const unit = marketplaceListings.find(u => u.id === unitId) || userListings.find(u => u.id === unitId);
+            if (!unit) return;
+
+            const modal = document.getElementById('unit-detail-modal');
+            const content = document.getElementById('modal-unit-content');
+            
+            const gradient = `linear-gradient(135deg, ${factionGradients[unit.faction][0]}, ${factionGradients[unit.faction][1]})`;
+            
+            content.innerHTML = `
+                <div style="display: flex; gap: 30px;">
+                    <div style="flex: 1;">
+                        <div class="unit-card-preview" style="background: ${gradient}; height: 300px; border-radius: 12px;">
+                            <div class="rarity-border rarity-${unit.rarity}"></div>
+                            <div class="unit-info">
+                                <div class="unit-name" style="font-size: 20px;">${unit.name}</div>
+                                <div>Role: ${unit.role}</div>
+                                <div>Faction: ${unit.faction}</div>
+                                <div>Rarity: ${unit.rarity}</div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 20px;">
+                            <h3>Stats</h3>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;">
+                                <div>WAR: ${unit.stats.war}</div>
+                                <div>RES: ${unit.stats.res}</div>
+                                <div>VEL: ${unit.stats.vel}</div>
+                                <div>ACC: ${unit.stats.acc}</div>
+                                <div>DIS: ${unit.stats.dis}</div>
+                                <div>INS: ${unit.stats.ins}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="flex: 1;">
+                        <div style="background: var(--cow-bg-dark); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                            <h3>Price Information</h3>
+                            <div style="font-size: 32px; color: var(--cow-gold); margin: 10px 0;">${unit.price} $WAR</div>
+                            <div style="color: #888;">${unit.ethPrice} ETH equivalent</div>
+                            <div style="margin-top: 10px; font-size: 14px;">Seller: ${unit.seller}</div>
+                            <div style="font-size: 14px;">Listed: ${unit.timeAgo}</div>
+                        </div>
+                        
+                        <div class="price-history-chart" id="price-chart">
+                            <canvas id="price-canvas" width="100%" height="200"></canvas>
+                        </div>
+                        
+                        ${unit.battles > 0 ? `
+                        <div style="background: var(--cow-bg-dark); padding: 15px; border-radius: 8px; margin-top: 20px;">
+                            <h4>Battle History</h4>
+                            <div>${unit.battles} total battles</div>
+                            <div>${unit.wins} victories (${Math.round(unit.wins/unit.battles*100)}% win rate)</div>
+                            ${unit.isBlooded ? '<div style="color: var(--cow-red); font-weight: bold;">⚔️ BLOODED - Death Match Survivor</div>' : ''}
+                        </div>
+                        ` : ''}
+                        
+                        <div style="margin-top: 20px; display: flex; gap: 10px;">
+                            <button class="buy-button" style="flex: 2;" onclick="buyUnit('${unit.id}'); closeUnitDetail();">
+                                BUY FOR ${unit.price} $WAR
+                            </button>
+                            <button class="buy-button" style="flex: 1; background: var(--cow-gold);" onclick="makeOffer('${unit.id}')">
+                                MAKE OFFER
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            modal.style.display = 'flex';
+            
+            // Draw price history chart
+            setTimeout(() => drawPriceChart(unit.priceHistory), 100);
+        }
+
+        function closeUnitDetail() {
+            document.getElementById('unit-detail-modal').style.display = 'none';
+        }
+
+        function makeOffer(unitId) {
+            const offer = prompt('Enter your offer in $WAR:');
+            if (offer && !isNaN(offer) && offer > 0) {
+                alert(`Offer of ${offer} $WAR submitted! Seller will be notified.`);
+            }
+        }
+
+        function drawPriceChart(priceHistory) {
+            const canvas = document.getElementById('price-canvas');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 200;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const minPrice = Math.min(...priceHistory);
+            const maxPrice = Math.max(...priceHistory);
+            const priceRange = maxPrice - minPrice || 1;
+            
+            // Draw grid lines
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 5; i++) {
+                const y = (canvas.height / 5) * i;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            // Draw price line
+            ctx.strokeStyle = '#00E5FF';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            priceHistory.forEach((price, index) => {
+                const x = (index / (priceHistory.length - 1)) * canvas.width;
+                const y = canvas.height - ((price - minPrice) / priceRange) * canvas.height;
+                
+                if (index === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            
+            ctx.stroke();
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab switching
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    switchTab(button.dataset.tab);
+                });
+            });
+
+            // Initial render
+            renderListings();
+            
+            // Close modal on outside click
+            document.getElementById('unit-detail-modal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeUnitDetail();
+                }
+            });
+
+            // Save to localStorage periodically
+            setInterval(() => {
+                localStorage.setItem('cow_marketplace_balance', userBalance);
+                localStorage.setItem('cow_user_listings', JSON.stringify(userListings));
+            }, 5000);
+
+            // Load from localStorage
+            const savedBalance = localStorage.getItem('cow_marketplace_balance');
+            if (savedBalance) {
+                userBalance = parseInt(savedBalance);
+                document.querySelector('.war-balance').textContent = `$WAR Balance: ${userBalance.toLocaleString()}`;
+            }
+
+            const savedListings = localStorage.getItem('cow_user_listings');
+            if (savedListings) {
+                try {
+                    userListings = JSON.parse(savedListings);
+                } catch (e) {
+                    console.error('Failed to load saved listings');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
