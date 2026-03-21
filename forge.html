@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chain of War — The Forge</title>
+    <link rel="stylesheet" href="design-system.css">
+    <style>
+        /* === FORGE-SPECIFIC STYLES === */
+        .forge-container {
+            min-height: 100vh;
+            background: var(--cow-bg-deep);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .forge-background {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at 70% 50%, rgba(255, 165, 0, 0.1) 0%, transparent 50%),
+                        linear-gradient(45deg, var(--cow-bg-deep) 30%, #0a0507 70%);
+        }
+        
+        .particles {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        
+        .particle {
+            position: absolute;
+            background: radial-gradient(circle, #ff8800 0%, #ff4400 50%, transparent 100%);
+            border-radius: 50%;
+            animation: float 6s infinite ease-in-out;
+            opacity: 0.7;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.3; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 0.7; }
+        }
+        
+        .forge-header {
+            position: relative;
+            padding: 2rem;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.1), transparent);
+            border-bottom: 2px solid rgba(255, 165, 0, 0.3);
+        }
+        
+        .forge-title {
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--cow-gold);
+            text-shadow: 2px 2px 0 #ff4400, 0 0 20px rgba(255, 165, 0, 0.5);
+            margin-bottom: 0.5rem;
+            letter-spacing: 3px;
+        }
+        
+        .forge-subtitle {
+            color: #ffaa44;
+            font-size: 1.2rem;
+            font-weight: 300;
+        }
+        
+        .forge-main {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: calc(100vh - 200px);
+            position: relative;
+        }
+        
+        .collection-panel {
+            padding: 2rem;
+            border-right: 2px solid rgba(255, 165, 0, 0.3);
+            overflow-y: auto;
+            max-height: calc(100vh - 200px);
+        }
+        
+        .forge-panel {
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .panel-title {
+            font-size: 1.5rem;
+            color: var(--cow-gold);
+            margin-bottom: 1.5rem;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .rarity-group {
+            margin-bottom: 2rem;
+        }
+        
+        .rarity-header {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border-radius: 8px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .rarity-common { background: rgba(128, 128, 128, 0.2); color: #aaa; }
+        .rarity-uncommon { background: rgba(0, 255, 0, 0.2); color: #4ade80; }
+        .rarity-rare { background: rgba(0, 100, 255, 0.2); color: #60a5fa; }
+        .rarity-epic { background: rgba(128, 0, 255, 0.2); color: #a78bfa; }
+        .rarity-legendary { background: rgba(255, 165, 0, 0.2); color: var(--cow-gold); }
+        
+        .unit-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+        
+        .unit-card {
+            background: var(--cow-bg-card);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .unit-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+        
+        .unit-card.selected {
+            border-color: var(--cow-gold);
+            box-shadow: 0 0 20px rgba(255, 165, 0, 0.5);
+            transform: translateY(-5px);
+        }
+        
+        .unit-card.selected::after {
+            content: "✓";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--cow-gold);
+            color: black;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .unit-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .faction-emblem {
+            width: 40px;
+            height: 40px;
+            margin-right: 1rem;
+            border-radius: 50%;
+            background: var(--cow-bg-elevated);
+            padding: 5px;
+        }
+        
+        .unit-info h3 {
+            color: #fff;
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .unit-role {
+            color: #888;
+            font-size: 0.9rem;
+        }
+        
+        .unit-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 0.25rem;
+            border-radius: 4px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        .stat-label {
+            font-size: 0.7rem;
+            color: #888;
+            display: block;
+        }
+        
+        .stat-value {
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-top: 0.2rem;
+        }
+        
+        .stat-war { color: var(--stat-war); }
+        .stat-res { color: var(--stat-res); }
+        .stat-vel { color: var(--stat-vel); }
+        .stat-acc { color: var(--stat-acc); }
+        .stat-dis { color: var(--stat-dis); }
+        .stat-ins { color: var(--stat-ins); }
+        
+        .unit-cost {
+            text-align: center;
+            color: var(--cow-gold);
+            font-weight: bold;
+        }
+        
+        .forge-area {
+            background: rgba(255, 165, 0, 0.05);
+            border: 2px dashed rgba(255, 165, 0, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .sacrifice-slots {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 2rem;
+        }
+        
+        .sacrifice-slot {
+            width: 120px;
+            height: 160px;
+            border: 3px dashed rgba(255, 165, 0, 0.5);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .sacrifice-slot.filled {
+            border-color: var(--cow-gold);
+            background: rgba(255, 165, 0, 0.1);
+            border-style: solid;
+        }
+        
+        .sacrifice-slot.glowing {
+            box-shadow: 0 0 30px rgba(255, 165, 0, 0.8);
+            animation: forge-pulse 2s infinite ease-in-out;
+        }
+        
+        @keyframes forge-pulse {
+            0%, 100% { box-shadow: 0 0 30px rgba(255, 165, 0, 0.8); }
+            50% { box-shadow: 0 0 50px rgba(255, 165, 0, 1); }
+        }
+        
+        .slot-card {
+            width: 100%;
+            height: 100%;
+            background: var(--cow-bg-card);
+            border-radius: 8px;
+            padding: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .slot-card .faction-emblem {
+            width: 30px;
+            height: 30px;
+            margin: 0;
+        }
+        
+        .slot-card h4 {
+            font-size: 0.8rem;
+            text-align: center;
+            color: #fff;
+            margin: 0.5rem 0;
+        }
+        
+        .forge-info {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 165, 0, 0.3);
+        }
+        
+        .forge-cost {
+            font-size: 1.2rem;
+            color: var(--cow-gold);
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        
+        .forge-result {
+            font-size: 1rem;
+            color: #fff;
+            text-align: center;
+        }
+        
+        .forge-button {
+            background: linear-gradient(135deg, #ff8800, #ff4400);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255, 68, 0, 0.3);
+        }
+        
+        .forge-button:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 68, 0, 0.5);
+        }
+        
+        .forge-button:disabled {
+            background: rgba(128, 128, 128, 0.3);
+            color: #666;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        
+        .stats-panel {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 165, 0, 0.3);
+        }
+        
+        .stats-title {
+            color: var(--cow-gold);
+            text-align: center;
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+        
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            color: #ccc;
+        }
+        
+        .stat-row .stat-value {
+            color: var(--cow-gold);
+            font-weight: bold;
+        }
+        
+        .forge-animation {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        .energy-particles {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 165, 0, 0.8) 0%, transparent 70%);
+            animation: energy-pulse 3s ease-out forwards;
+        }
+        
+        @keyframes energy-pulse {
+            0% { transform: scale(0) rotate(0deg); opacity: 0; }
+            50% { transform: scale(0.5) rotate(180deg); opacity: 1; }
+            100% { transform: scale(2) rotate(360deg); opacity: 0; }
+        }
+        
+        .result-card {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: var(--cow-bg-card);
+            border: 3px solid var(--cow-gold);
+            border-radius: 20px;
+            padding: 2rem;
+            z-index: 1001;
+            box-shadow: 0 0 50px rgba(255, 165, 0, 0.8);
+            animation: card-reveal 2s ease-out forwards;
+        }
+        
+        @keyframes card-reveal {
+            0% { transform: translate(-50%, -50%) scale(0) rotate(-180deg); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.1) rotate(0deg); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
+        }
+        
+        .forged-banner {
+            font-size: 2rem;
+            color: var(--cow-gold);
+            text-align: center;
+            text-shadow: 2px 2px 0 #ff4400;
+            margin-bottom: 1rem;
+            animation: glow-pulse 2s infinite ease-in-out;
+        }
+        
+        @keyframes glow-pulse {
+            0%, 100% { text-shadow: 2px 2px 0 #ff4400, 0 0 10px rgba(255, 165, 0, 0.5); }
+            50% { text-shadow: 2px 2px 0 #ff4400, 0 0 20px rgba(255, 165, 0, 1); }
+        }
+        
+        .inherited-stat {
+            color: var(--cow-gold);
+            text-shadow: 0 0 5px rgba(255, 165, 0, 0.5);
+            font-weight: bold;
+        }
+        
+        .balance-display {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 1rem;
+            border-radius: 10px;
+            border: 2px solid var(--cow-gold);
+            color: var(--cow-gold);
+            font-weight: bold;
+            z-index: 100;
+        }
+        
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .forge-main {
+                grid-template-columns: 1fr;
+            }
+            
+            .collection-panel {
+                border-right: none;
+                border-bottom: 2px solid rgba(255, 165, 0, 0.3);
+                max-height: 50vh;
+            }
+            
+            .unit-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+            
+            .sacrifice-slots {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .sacrifice-slot {
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="forge-container">
+        <div class="forge-background"></div>
+        <div class="particles" id="particles"></div>
+        
+        <div class="balance-display">
+            <div>💰 <span id="war-balance">10000</span> $WAR</div>
+        </div>
+        
+        <header class="forge-header">
+            <img src="assets/logo.png" alt="Chain of War" style="height: 60px; margin-bottom: 1rem;">
+            <h1 class="forge-title">THE FORGE</h1>
+            <p class="forge-subtitle">Sacrifice three units to forge something greater</p>
+        </header>
+        
+        <main class="forge-main">
+            <section class="collection-panel">
+                <h2 class="panel-title">Your Collection</h2>
+                <div id="collection-grid"></div>
+            </section>
+            
+            <section class="forge-panel">
+                <div>
+                    <h2 class="panel-title">The Forge</h2>
+                    
+                    <div class="forge-area">
+                        <div class="sacrifice-slots">
+                            <div class="sacrifice-slot" id="slot-1">
+                                <div style="color: #666; font-size: 3rem;">+</div>
+                            </div>
+                            <div class="sacrifice-slot" id="slot-2">
+                                <div style="color: #666; font-size: 3rem;">+</div>
+                            </div>
+                            <div class="sacrifice-slot" id="slot-3">
+                                <div style="color: #666; font-size: 3rem;">+</div>
+                            </div>
+                        </div>
+                        
+                        <div class="forge-info" id="forge-info">
+                            <div class="forge-cost">Select 3 units of the same rarity to begin forging</div>
+                            <div class="forge-result"></div>
+                        </div>
+                        
+                        <button class="forge-button" id="forge-btn" disabled>FORGE</button>
+                    </div>
+                </div>
+                
+                <div class="stats-panel">
+                    <h3 class="stats-title">Forge Statistics</h3>
+                    <div class="stat-row">
+                        <span>Total Forges:</span>
+                        <span class="stat-value" id="total-forges">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Units Sacrificed:</span>
+                        <span class="stat-value" id="units-sacrificed">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>$WAR Spent:</span>
+                        <span class="stat-value" id="war-spent">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Highest Rarity:</span>
+                        <span class="stat-value" id="highest-rarity">Common</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <script src="nav.js"></script>
+    <script>
+        // Game Data and State
+        const FACTIONS = {
+            'iron-covenant': { name: 'Iron Covenant', emblem: 'assets/emblem-iron-covenant.png' },
+            'swarm-of-xeth': { name: 'Swarm of Xeth', emblem: 'assets/emblem-swarm-of-xeth.png' },
+            'void-pharaohs': { name: 'Void Pharaohs', emblem: 'assets/emblem-void-pharaohs.png' },
+            'emerald-tide': { name: 'Emerald Tide', emblem: 'assets/emblem-emerald-tide.png' },
+            'celestial-order': { name: 'Celestial Order', emblem: 'assets/emblem-celestial-order.png' },
+            'warp-touched': { name: 'Warp Touched', emblem: 'assets/emblem-warp-touched.png' },
+            'shadow-kin': { name: 'Shadow Kin', emblem: 'assets/emblem-shadow-kin.png' },
+            'steel-legion': { name: 'Steel Legion', emblem: 'assets/emblem-steel-legion.png' }
+        };
+        
+        const RARITIES = {
+            common: { name: 'Common', color: '#888', pointRange: [60, 120] },
+            uncommon: { name: 'Uncommon', color: '#4ade80', pointRange: [121, 180] },
+            rare: { name: 'Rare', color: '#60a5fa', pointRange: [181, 280] },
+            epic: { name: 'Epic', color: '#a78bfa', pointRange: [281, 350] },
+            legendary: { name: 'Legendary', color: '#ffb300', pointRange: [351, 500] }
+        };
+        
+        const FORGE_COSTS = {
+            common: 200,
+            uncommon: 500,
+            rare: 1500,
+            epic: 5000
+        };
+        
+        const UNIT_DATABASE = [
+            // Iron Covenant
+            { id: 1, name: 'Iron Militia', faction: 'iron-covenant', role: 'Troops', points: 80, stats: { war: 3, res: 4, vel: 4, acc: 4, dis: 6, ins: 3 } },
+            { id: 2, name: 'Steel Brothers', faction: 'iron-covenant', role: 'Troops', points: 100, stats: { war: 4, res: 5, vel: 5, acc: 4, dis: 6, ins: 4 } },
+            { id: 3, name: 'Covenant Guard', faction: 'iron-covenant', role: 'Troops', points: 120, stats: { war: 5, res: 6, vel: 4, acc: 5, dis: 7, ins: 3 } },
+            { id: 4, name: 'Strike Bikes', faction: 'iron-covenant', role: 'Fast Attack', points: 140, stats: { war: 5, res: 3, vel: 9, acc: 6, dis: 5, ins: 2 } },
+            { id: 5, name: 'Outrider Squadron', faction: 'iron-covenant', role: 'Fast Attack', points: 180, stats: { war: 6, res: 4, vel: 8, acc: 7, dis: 6, ins: 4 } },
+            { id: 6, name: 'Covenant Exemplars', faction: 'iron-covenant', role: 'Elites', points: 200, stats: { war: 6, res: 6, vel: 6, acc: 6, dis: 8, ins: 3 } },
+            { id: 7, name: 'Aegis Terminators', faction: 'iron-covenant', role: 'Elites', points: 250, stats: { war: 8, res: 8, vel: 3, acc: 6, dis: 8, ins: 2 } },
+            { id: 8, name: 'Iron Centurion', faction: 'iron-covenant', role: 'HQ', points: 300, stats: { war: 7, res: 8, vel: 5, acc: 6, dis: 9, ins: 5 } },
+            { id: 9, name: 'Iron Fortress', faction: 'iron-covenant', role: 'Heavy Support', points: 300, stats: { war: 6, res: 9, vel: 2, acc: 5, dis: 8, ins: 5 } },
+            { id: 10, name: 'Devastator Battery', faction: 'iron-covenant', role: 'Heavy Support', points: 350, stats: { war: 9, res: 6, vel: 2, acc: 8, dis: 7, ins: 3 } },
+            
+            // Swarm of Xeth
+            { id: 11, name: 'Skitterlings', faction: 'swarm-of-xeth', role: 'Troops', points: 60, stats: { war: 2, res: 2, vel: 8, acc: 3, dis: 4, ins: 5 } },
+            { id: 12, name: 'Hive Drones', faction: 'swarm-of-xeth', role: 'Troops', points: 90, stats: { war: 4, res: 3, vel: 6, acc: 4, dis: 5, ins: 6 } },
+            { id: 13, name: 'Swarm Warriors', faction: 'swarm-of-xeth', role: 'Troops', points: 110, stats: { war: 5, res: 4, vel: 7, acc: 4, dis: 4, ins: 6 } },
+            { id: 14, name: 'Hunter Pack', faction: 'swarm-of-xeth', role: 'Fast Attack', points: 130, stats: { war: 5, res: 2, vel: 9, acc: 5, dis: 3, ins: 8 } },
+            { id: 15, name: 'Razor Flyers', faction: 'swarm-of-xeth', role: 'Fast Attack', points: 150, stats: { war: 4, res: 2, vel: 10, acc: 6, dis: 4, ins: 6 } },
+            { id: 16, name: 'Brood Tyrant', faction: 'swarm-of-xeth', role: 'Elites', points: 220, stats: { war: 7, res: 5, vel: 6, acc: 5, dis: 6, ins: 8 } },
+            { id: 17, name: 'Hive Guard', faction: 'swarm-of-xeth', role: 'Elites', points: 190, stats: { war: 6, res: 6, vel: 5, acc: 5, dis: 7, ins: 6 } },
+            { id: 18, name: 'Swarm Queen', faction: 'swarm-of-xeth', role: 'HQ', points: 320, stats: { war: 6, res: 7, vel: 6, acc: 6, dis: 8, ins: 9 } },
+            { id: 19, name: 'Siege Spitter', faction: 'swarm-of-xeth', role: 'Heavy Support', points: 320, stats: { war: 8, res: 5, vel: 2, acc: 7, dis: 4, ins: 6 } },
+            { id: 20, name: 'Hive Leviathan', faction: 'swarm-of-xeth', role: 'Heavy Support', points: 380, stats: { war: 7, res: 8, vel: 3, acc: 5, dis: 3, ins: 8 } },
+            
+            // Void Pharaohs
+            { id: 21, name: 'Tomb Guardians', faction: 'void-pharaohs', role: 'Troops', points: 90, stats: { war: 4, res: 7, vel: 3, acc: 4, dis: 7, ins: 3 } },
+            { id: 22, name: 'Phalanx Infantry', faction: 'void-pharaohs', role: 'Troops', points: 100, stats: { war: 4, res: 5, vel: 4, acc: 5, dis: 7, ins: 3 } },
+            { id: 23, name: 'Scarab Warriors', faction: 'void-pharaohs', role: 'Troops', points: 110, stats: { war: 5, res: 6, vel: 4, acc: 5, dis: 6, ins: 4 } },
+            { id: 24, name: 'Shadow Wraiths', faction: 'void-pharaohs', role: 'Fast Attack', points: 140, stats: { war: 6, res: 3, vel: 7, acc: 5, dis: 4, ins: 5 } },
+            { id: 25, name: 'Void Hunters', faction: 'void-pharaohs', role: 'Fast Attack', points: 160, stats: { war: 5, res: 4, vel: 8, acc: 6, dis: 5, ins: 4 } },
+            { id: 26, name: 'Wraith Constructs', faction: 'void-pharaohs', role: 'Elites', points: 200, stats: { war: 6, res: 5, vel: 6, acc: 6, dis: 6, ins: 6 } },
+            { id: 27, name: 'Immortal Guard', faction: 'void-pharaohs', role: 'Elites', points: 240, stats: { war: 7, res: 7, vel: 4, acc: 6, dis: 8, ins: 3 } },
+            { id: 28, name: 'Void Overlord', faction: 'void-pharaohs', role: 'HQ', points: 320, stats: { war: 6, res: 8, vel: 4, acc: 7, dis: 9, ins: 6 } },
+            { id: 29, name: 'Tomb Fortress', faction: 'void-pharaohs', role: 'Heavy Support', points: 350, stats: { war: 5, res: 10, vel: 2, acc: 6, dis: 8, ins: 4 } },
+            { id: 30, name: 'Doomsday Engine', faction: 'void-pharaohs', role: 'Heavy Support', points: 400, stats: { war: 10, res: 7, vel: 1, acc: 9, dis: 8, ins: 3 } },
+            
+            // Emerald Tide
+            { id: 31, name: 'Tide Scouts', faction: 'emerald-tide', role: 'Troops', points: 70, stats: { war: 3, res: 3, vel: 7, acc: 5, dis: 4, ins: 4 } },
+            { id: 32, name: 'Wave Riders', faction: 'emerald-tide', role: 'Troops', points: 95, stats: { war: 4, res: 4, vel: 6, acc: 5, dis: 5, ins: 4 } },
+            { id: 33, name: 'Emerald Guard', faction: 'emerald-tide', role: 'Troops', points: 115, stats: { war: 5, res: 5, vel: 5, acc: 6, dis: 6, ins: 3 } },
+            { id: 34, name: 'Storm Riders', faction: 'emerald-tide', role: 'Fast Attack', points: 145, stats: { war: 5, res: 3, vel: 8, acc: 6, dis: 5, ins: 5 } },
+            { id: 35, name: 'Tidal Cavalry', faction: 'emerald-tide', role: 'Fast Attack', points: 165, stats: { war: 6, res: 4, vel: 7, acc: 5, dis: 6, ins: 4 } },
+            { id: 36, name: 'Depth Wardens', faction: 'emerald-tide', role: 'Elites', points: 210, stats: { war: 6, res: 6, vel: 4, acc: 6, dis: 7, ins: 6 } },
+            { id: 37, name: 'Tide Champions', faction: 'emerald-tide', role: 'Elites', points: 230, stats: { war: 7, res: 6, vel: 5, acc: 6, dis: 7, ins: 4 } },
+            { id: 38, name: 'Sea Lord', faction: 'emerald-tide', role: 'HQ', points: 310, stats: { war: 6, res: 7, vel: 5, acc: 7, dis: 8, ins: 7 } },
+            { id: 39, name: 'Leviathan Cannon', faction: 'emerald-tide', role: 'Heavy Support', points: 340, stats: { war: 8, res: 6, vel: 3, acc: 8, dis: 6, ins: 4 } },
+            { id: 40, name: 'Kraken Titan', faction: 'emerald-tide', role: 'Heavy Support', points: 390, stats: { war: 8, res: 8, vel: 4, acc: 6, dis: 5, ins: 7 } }
+        ];
+        
+        // Game State
+        let gameState = {
+            warBalance: 10000,
+            collection: [],
+            selectedUnits: [],
+            sacrificeSlots: [null, null, null],
+            forgeStats: {
+                totalForges: 0,
+                unitsSacrificed: 0,
+                warSpent: 0,
+                highestRarity: 'common'
+            }
+        };
+        
+        // Audio Context
+        let audioContext;
+        let audioBuffers = {};
+        
+        // Initialize game
+        function initGame() {
+            initAudio();
+            generateCollection();
+            loadSavedData();
+            updateDisplay();
+            setupEventListeners();
+            createParticles();
+        }
+        
+        function initAudio() {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                generateSounds();
+            } catch (e) {
+                console.log('Audio not supported');
+            }
+        }
+        
+        function generateSounds() {
+            // Generate forge rumble
+            const rumbleBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 2, audioContext.sampleRate);
+            const rumbleData = rumbleBuffer.getChannelData(0);
+            for (let i = 0; i < rumbleData.length; i++) {
+                rumbleData[i] = (Math.random() - 0.5) * 0.3 * Math.sin(i * 0.01);
+            }
+            audioBuffers.rumble = rumbleBuffer;
+            
+            // Generate card slide
+            const slideBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.5, audioContext.sampleRate);
+            const slideData = slideBuffer.getChannelData(0);
+            for (let i = 0; i < slideData.length; i++) {
+                slideData[i] = Math.sin(i * 0.02) * 0.2 * (1 - i / slideData.length);
+            }
+            audioBuffers.slide = slideBuffer;
+            
+            // Generate reveal sound
+            const revealBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 1, audioContext.sampleRate);
+            const revealData = revealBuffer.getChannelData(0);
+            for (let i = 0; i < revealData.length; i++) {
+                revealData[i] = Math.sin(i * 0.05) * 0.3 * Math.exp(-i * 0.0001);
+            }
+            audioBuffers.reveal = revealBuffer;
+        }
+        
+        function playSound(name) {
+            if (!audioContext || !audioBuffers[name]) return;
+            
+            const source = audioContext.createBufferSource();
+            source.buffer = audioBuffers[name];
+            source.connect(audioContext.destination);
+            source.start();
+        }
+        
+        function generateCollection() {
+            const collection = [];
+            
+            // Generate collection based on requirements: 20 Commons, 8 Uncommons, 4 Rares, 1 Epic
+            const rarityDistribution = [
+                { rarity: 'common', count: 20 },
+                { rarity: 'uncommon', count: 8 },
+                { rarity: 'rare', count: 4 },
+                { rarity: 'epic', count: 1 }
+            ];
+            
+            rarityDistribution.forEach(({ rarity, count }) => {
+                const eligibleUnits = UNIT_DATABASE.filter(unit => {
+                    const unitRarity = getRarity(unit.points);
+                    return unitRarity === rarity;
+                });
+                
+                for (let i = 0; i < count; i++) {
+                    const randomUnit = eligibleUnits[Math.floor(Math.random() * eligibleUnits.length)];
+                    collection.push({
+                        ...randomUnit,
+                        instanceId: Date.now() + i + Math.random()
+                    });
+                }
+            });
+            
+            gameState.collection = collection;
+        }
+        
+        function getRarity(points) {
+            for (const [rarity, data] of Object.entries(RARITIES)) {
+                if (points >= data.pointRange[0] && points <= data.pointRange[1]) {
+                    return rarity;
+                }
+            }
+            return 'common';
+        }
+        
+        function setupEventListeners() {
+            document.getElementById('forge-btn').addEventListener('click', performForge);
+            
+            // Unit card click handlers will be added when rendering
+        }
+        
+        function updateDisplay() {
+            renderCollection();
+            updateForgeInfo();
+            updateStats();
+            updateBalance();
+        }
+        
+        function renderCollection() {
+            const grid = document.getElementById('collection-grid');
+            grid.innerHTML = '';
+            
+            // Group by rarity
+            const rarityGroups = {};
+            gameState.collection.forEach(unit => {
+                const rarity = getRarity(unit.points);
+                if (!rarityGroups[rarity]) rarityGroups[rarity] = [];
+                rarityGroups[rarity].push(unit);
+            });
+            
+            // Render each rarity group
+            Object.keys(RARITIES).forEach(rarity => {
+                if (!rarityGroups[rarity] || rarityGroups[rarity].length === 0) return;
+                
+                const group = document.createElement('div');
+                group.className = 'rarity-group';
+                
+                const header = document.createElement('div');
+                header.className = `rarity-header rarity-${rarity}`;
+                header.textContent = `${RARITIES[rarity].name} (${rarityGroups[rarity].length})`;
+                group.appendChild(header);
+                
+                const unitGrid = document.createElement('div');
+                unitGrid.className = 'unit-grid';
+                
+                rarityGroups[rarity].forEach(unit => {
+                    const card = createUnitCard(unit);
+                    unitGrid.appendChild(card);
+                });
+                
+                group.appendChild(unitGrid);
+                grid.appendChild(group);
+            });
+        }
+        
+        function createUnitCard(unit) {
+            const card = document.createElement('div');
+            card.className = 'unit-card';
+            card.dataset.instanceId = unit.instanceId;
+            
+            if (gameState.selectedUnits.some(u => u.instanceId === unit.instanceId)) {
+                card.classList.add('selected');
+            }
+            
+            const faction = FACTIONS[unit.faction];
+            const rarity = getRarity(unit.points);
+            
+            card.innerHTML = `
+                <div class="unit-header">
+                    <img class="faction-emblem" src="${faction.emblem}" alt="${faction.name}">
+                    <div class="unit-info">
+                        <h3>${unit.name}</h3>
+                        <div class="unit-role">${unit.role}</div>
+                    </div>
+                </div>
+                <div class="unit-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">WAR</span>
+                        <div class="stat-value stat-war">${unit.stats.war}</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">RES</span>
+                        <div class="stat-value stat-res">${unit.stats.res}</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">VEL</span>
+                        <div class="stat-value stat-vel">${unit.stats.vel}</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">ACC</span>
+                        <div class="stat-value stat-acc">${unit.stats.acc}</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">DIS</span>
+                        <div class="stat-value stat-dis">${unit.stats.dis}</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">INS</span>
+                        <div class="stat-value stat-ins">${unit.stats.ins}</div>
+                    </div>
+                </div>
+                <div class="unit-cost">${unit.points} pts</div>
+            `;
+            
+            card.addEventListener('click', () => selectUnit(unit));
+            
+            return card;
+        }
+        
+        function selectUnit(unit) {
+            const isSelected = gameState.selectedUnits.some(u => u.instanceId === unit.instanceId);
+            
+            if (isSelected) {
+                // Deselect
+                gameState.selectedUnits = gameState.selectedUnits.filter(u => u.instanceId !== unit.instanceId);
+                removeFromSacrificeSlots(unit);
+            } else {
+                // Select (max 3)
+                if (gameState.selectedUnits.length < 3) {
+                    gameState.selectedUnits.push(unit);
+                    addToSacrificeSlots(unit);
+                    playSound('slide');
+                }
+            }
+            
+            updateDisplay();
+        }
+        
+        function addToSacrificeSlots(unit) {
+            for (let i = 0; i < 3; i++) {
+                if (!gameState.sacrificeSlots[i]) {
+                    gameState.sacrificeSlots[i] = unit;
+                    updateSacrificeSlot(i, unit);
+                    break;
+                }
+            }
+        }
+        
+        function removeFromSacrificeSlots(unit) {
+            for (let i = 0; i < 3; i++) {
+                if (gameState.sacrificeSlots[i] && gameState.sacrificeSlots[i].instanceId === unit.instanceId) {
+                    gameState.sacrificeSlots[i] = null;
+                    updateSacrificeSlot(i, null);
+                    break;
+                }
+            }
+        }
+        
+        function updateSacrificeSlot(index, unit) {
+            const slot = document.getElementById(`slot-${index + 1}`);
+            
+            if (unit) {
+                slot.classList.add('filled');
+                const faction = FACTIONS[unit.faction];
+                slot.innerHTML = `
+                    <div class="slot-card">
+                        <img class="faction-emblem" src="${faction.emblem}" alt="${faction.name}">
+                        <h4>${unit.name}</h4>
+                        <div style="font-size: 0.7rem; color: #888;">${unit.points} pts</div>
+                    </div>
+                `;
+            } else {
+                slot.classList.remove('filled', 'glowing');
+                slot.innerHTML = '<div style="color: #666; font-size: 3rem;">+</div>';
+            }
+        }
+        
+        function updateForgeInfo() {
+            const forgeInfo = document.getElementById('forge-info');
+            const forgeBtn = document.getElementById('forge-btn');
+            
+            if (gameState.selectedUnits.length === 0) {
+                forgeInfo.innerHTML = `
+                    <div class="forge-cost">Select 3 units of the same rarity to begin forging</div>
+                    <div class="forge-result"></div>
+                `;
+                forgeBtn.disabled = true;
+                return;
+            }
+            
+            if (gameState.selectedUnits.length < 3) {
+                forgeInfo.innerHTML = `
+                    <div class="forge-cost">Select ${3 - gameState.selectedUnits.length} more units</div>
+                    <div class="forge-result"></div>
+                `;
+                forgeBtn.disabled = true;
+                return;
+            }
+            
+            // Check if all units are same rarity
+            const rarities = gameState.selectedUnits.map(unit => getRarity(unit.points));
+            const uniqueRarities = [...new Set(rarities)];
+            
+            if (uniqueRarities.length > 1) {
+                forgeInfo.innerHTML = `
+                    <div class="forge-cost" style="color: #ff4444;">All units must be the same rarity!</div>
+                    <div class="forge-result">Selected: ${uniqueRarities.map(r => RARITIES[r].name).join(', ')}</div>
+                `;
+                forgeBtn.disabled = true;
+                return;
+            }
+            
+            const currentRarity = uniqueRarities[0];
+            const cost = FORGE_COSTS[currentRarity];
+            const nextRarity = getNextRarity(currentRarity);
+            
+            if (!nextRarity) {
+                forgeInfo.innerHTML = `
+                    <div class="forge-cost" style="color: #ff4444;">Legendary units cannot be forged higher!</div>
+                    <div class="forge-result"></div>
+                `;
+                forgeBtn.disabled = true;
+                return;
+            }
+            
+            const canAfford = gameState.warBalance >= cost;
+            const dominantFaction = getDominantFaction(gameState.selectedUnits);
+            
+            forgeInfo.innerHTML = `
+                <div class="forge-cost" style="color: ${canAfford ? 'var(--cow-gold)' : '#ff4444'};">
+                    Cost: ${cost} $WAR
+                </div>
+                <div class="forge-result">
+                    Creates: 1 ${RARITIES[nextRarity].name} ${FACTIONS[dominantFaction].name} unit
+                </div>
+            `;
+            
+            forgeBtn.disabled = !canAfford;
+            
+            // Add glow effect to slots when ready
+            if (canAfford) {
+                document.querySelectorAll('.sacrifice-slot.filled').forEach(slot => {
+                    slot.classList.add('glowing');
+                });
+            } else {
+                document.querySelectorAll('.sacrifice-slot.filled').forEach(slot => {
+                    slot.classList.remove('glowing');
+                });
+            }
+        }
+        
+        function getNextRarity(currentRarity) {
+            const rarityOrder = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
+            const currentIndex = rarityOrder.indexOf(currentRarity);
+            return rarityOrder[currentIndex + 1] || null;
+        }
+        
+        function getDominantFaction(units) {
+            const factionCounts = {};
+            units.forEach(unit => {
+                factionCounts[unit.faction] = (factionCounts[unit.faction] || 0) + 1;
+            });
+            
+            return Object.entries(factionCounts).sort((a, b) => b[1] - a[1])[0][0];
+        }
+        
+        function performForge() {
+            const currentRarity = getRarity(gameState.selectedUnits[0].points);
+            const cost = FORGE_COSTS[currentRarity];
+            const nextRarity = getNextRarity(currentRarity);
+            const dominantFaction = getDominantFaction(gameState.selectedUnits);
+            
+            // Deduct cost
+            gameState.warBalance -= cost;
+            
+            // Create new unit with inherited best stats
+            const newUnit = createForgedUnit(gameState.selectedUnits, nextRarity, dominantFaction);
+            
+            // Remove sacrificed units from collection
+            gameState.selectedUnits.forEach(selectedUnit => {
+                gameState.collection = gameState.collection.filter(unit => unit.instanceId !== selectedUnit.instanceId);
+            });
+            
+            // Add new unit to collection
+            gameState.collection.push(newUnit);
+            
+            // Update stats
+            gameState.forgeStats.totalForges++;
+            gameState.forgeStats.unitsSacrificed += 3;
+            gameState.forgeStats.warSpent += cost;
+            
+            const rarityOrder = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
+            if (rarityOrder.indexOf(nextRarity) > rarityOrder.indexOf(gameState.forgeStats.highestRarity)) {
+                gameState.forgeStats.highestRarity = nextRarity;
+            }
+            
+            // Clear selection
+            gameState.selectedUnits = [];
+            gameState.sacrificeSlots = [null, null, null];
+            
+            // Save data
+            saveData();
+            
+            // Play forge animation
+            playForgeAnimation(newUnit);
+        }
+        
+        function createForgedUnit(sacrificedUnits, newRarity, faction) {
+            // Find a template unit of the target rarity and faction
+            const templateUnits = UNIT_DATABASE.filter(unit => 
+                getRarity(unit.points) === newRarity && unit.faction === faction
+            );
+            
+            let template;
+            if (templateUnits.length > 0) {
+                template = templateUnits[Math.floor(Math.random() * templateUnits.length)];
+            } else {
+                // Fallback to any unit of the target rarity
+                const anyTemplateUnits = UNIT_DATABASE.filter(unit => getRarity(unit.points) === newRarity);
+                template = anyTemplateUnits[Math.floor(Math.random() * anyTemplateUnits.length)];
+            }
+            
+            // Create new unit with inherited best stats
+            const inheritedStats = {
+                war: Math.max(...sacrificedUnits.map(u => u.stats.war)),
+                res: Math.max(...sacrificedUnits.map(u => u.stats.res)),
+                vel: Math.max(...sacrificedUnits.map(u => u.stats.vel)),
+                acc: Math.max(...sacrificedUnits.map(u => u.stats.acc)),
+                dis: Math.max(...sacrificedUnits.map(u => u.stats.dis)),
+                ins: Math.max(...sacrificedUnits.map(u => u.stats.ins))
+            };
+            
+            return {
+                ...template,
+                instanceId: Date.now() + Math.random(),
+                stats: inheritedStats,
+                isForged: true,
+                originalStats: template.stats,
+                inheritedFrom: sacrificedUnits.map(u => u.name)
+            };
+        }
+        
+        function playForgeAnimation(newUnit) {
+            playSound('rumble');
+            
+            // Create energy particle effect
+            const animation = document.createElement('div');
+            animation.className = 'forge-animation';
+            animation.innerHTML = '<div class="energy-particles"></div>';
+            document.body.appendChild(animation);
+            
+            setTimeout(() => {
+                animation.remove();
+                playSound('reveal');
+                showForgeResult(newUnit);
+            }, 2000);
+        }
+        
+        function showForgeResult(unit) {
+            const resultCard = document.createElement('div');
+            resultCard.className = 'result-card';
+            
+            const faction = FACTIONS[unit.faction];
+            const rarity = getRarity(unit.points);
+            
+            let inheritedStatsHtml = '';
+            if (unit.isForged) {
+                Object.entries(unit.stats).forEach(([stat, value]) => {
+                    const isInherited = value > unit.originalStats[stat];
+                    if (isInherited) {
+                        inheritedStatsHtml += `
+                            <div class="stat-item">
+                                <span class="stat-label">${stat.toUpperCase()}</span>
+                                <div class="stat-value stat-${stat} ${isInherited ? 'inherited-stat' : ''}">${value}</div>
+                            </div>
+                        `;
+                    }
+                });
+            }
+            
+            resultCard.innerHTML = `
+                <div class="forged-banner">FORGED!</div>
+                <div class="unit-header">
+                    <img class="faction-emblem" src="${faction.emblem}" alt="${faction.name}">
+                    <div class="unit-info">
+                        <h3>${unit.name}</h3>
+                        <div class="unit-role">${unit.role} • ${RARITIES[rarity].name}</div>
+                    </div>
+                </div>
+                ${inheritedStatsHtml ? `
+                    <div style="margin: 1rem 0;">
+                        <h4 style="color: var(--cow-gold); text-align: center; margin-bottom: 0.5rem;">Inherited Stats</h4>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+                            ${inheritedStatsHtml}
+                        </div>
+                    </div>
+                ` : ''}
+                <div style="text-align: center; margin-top: 1rem;">
+                    <button onclick="this.parentElement.parentElement.remove(); updateDisplay();" 
+                            style="background: var(--cow-gold); color: black; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                        FORGE AGAIN
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(resultCard);
+        }
+        
+        function updateStats() {
+            document.getElementById('total-forges').textContent = gameState.forgeStats.totalForges;
+            document.getElementById('units-sacrificed').textContent = gameState.forgeStats.unitsSacrificed;
+            document.getElementById('war-spent').textContent = gameState.forgeStats.warSpent;
+            document.getElementById('highest-rarity').textContent = RARITIES[gameState.forgeStats.highestRarity].name;
+        }
+        
+        function updateBalance() {
+            document.getElementById('war-balance').textContent = gameState.warBalance;
+        }
+        
+        function createParticles() {
+            const container = document.getElementById('particles');
+            
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.width = (Math.random() * 4 + 2) + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 4 + 4) + 's';
+                container.appendChild(particle);
+            }
+        }
+        
+        function saveData() {
+            const saveData = {
+                warBalance: gameState.warBalance,
+                collection: gameState.collection,
+                forgeStats: gameState.forgeStats
+            };
+            localStorage.setItem('cow_forge_data', JSON.stringify(saveData));
+        }
+        
+        function loadSavedData() {
+            try {
+                const saved = localStorage.getItem('cow_forge_data');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    gameState.warBalance = data.warBalance || 10000;
+                    if (data.collection && data.collection.length > 0) {
+                        gameState.collection = data.collection;
+                    }
+                    gameState.forgeStats = { ...gameState.forgeStats, ...data.forgeStats };
+                }
+            } catch (e) {
+                console.log('Failed to load saved data');
+            }
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', initGame);
+        
+        // Expose to global scope for result card button
+        window.updateDisplay = updateDisplay;
+    </script>
+</body>
+</html>
