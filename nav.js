@@ -20,8 +20,12 @@
     const navLinks = [
         { label: 'HOME', href: 'landing.html' },
         { label: 'BATTLE', href: 'index.html' },
+        { label: 'DEATH MATCH', href: 'deathmatch.html' },
+        { label: 'TOURNAMENT', href: 'tournament.html' },
         { label: 'WAR CHEST', href: 'warchest.html' },
         { label: 'ARMORY', href: 'armory.html' },
+        { label: 'FORGE', href: 'forge.html' },
+        { label: 'MARKET', href: 'marketplace.html' },
         { label: 'ECONOMY', href: 'economy.html' }
     ];
 
