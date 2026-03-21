@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💀 DEATH MATCH | Chain of War</title>
+    <link rel="stylesheet" href="design-system.css">
+    <style>
+        /* Death Match specific styling */
+        body {
+            background: #050510;
+            color: #fff;
+            font-family: 'Exo 2', 'Orbitron', monospace;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Red danger particles */
+        .danger-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.3;
+        }
+
+        .particle {
+            position: absolute;
+            background: radial-gradient(circle, #FF2D2D 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float 10s infinite linear;
+        }
+
+        @keyframes float {
+            from { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            to { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+        }
+
+        /* Death Match border */
+        .death-border {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 3px solid #FF2D2D;
+            pointer-events: none;
+            z-index: 1000;
+            box-shadow: inset 0 0 20px rgba(255, 45, 45, 0.3);
+            animation: pulse-border 2s infinite;
+        }
+
+        @keyframes pulse-border {
+            0%, 100% { border-color: #FF2D2D; box-shadow: inset 0 0 20px rgba(255, 45, 45, 0.3); }
+            50% { border-color: #FF6666; box-shadow: inset 0 0 30px rgba(255, 45, 45, 0.5); }
+        }
+
+        /* Screen states */
+        .screen {
+            display: none;
+            min-height: 100vh;
+            position: relative;
+            z-index: 10;
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* Pre-match screen */
+        .death-title {
+            font-size: 4rem;
+            color: #FF2D2D;
+            text-shadow: 0 0 20px #FF2D2D, 0 0 40px #FF2D2D;
+            margin-bottom: 20px;
+            animation: glow-pulse 2s infinite;
+        }
+
+        @keyframes glow-pulse {
+            0%, 100% { text-shadow: 0 0 20px #FF2D2D, 0 0 40px #FF2D2D; }
+            50% { text-shadow: 0 0 30px #FF2D2D, 0 0 60px #FF2D2D, 0 0 80px #FF2D2D; }
+        }
+
+        .warning {
+            font-size: 1.5rem;
+            color: #FFB300;
+            margin-bottom: 30px;
+            background: rgba(255, 45, 45, 0.1);
+            padding: 15px 30px;
+            border: 2px solid #FF2D2D;
+            border-radius: 10px;
+        }
+
+        .army-display {
+            display: flex;
+            gap: 15px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .unit-card {
+            background: linear-gradient(145deg, #0f0f1a, #161630);
+            border: 2px solid #00E5FF;
+            border-radius: 10px;
+            padding: 15px;
+            width: 200px;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .unit-card.cracked {
+            filter: grayscale(1) brightness(0.5);
+            border-color: #FF2D2D;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .unit-card.cracked::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 300"><path d="M50,0 L55,50 L45,100 L60,150 L40,200 L50,300" stroke="%23FF2D2D" stroke-width="3" fill="none"/><path d="M100,0 L105,80 L95,160 L110,240 L100,300" stroke="%23FF2D2D" stroke-width="2" fill="none"/></svg>');
+            pointer-events: none;
+        }
+
+        .unit-card.captured {
+            border-color: #00FF88;
+            transform: scale(0.9);
+            animation: slide-capture 1s;
+        }
+
+        @keyframes slide-capture {
+            from { transform: translateX(-200px) scale(1) rotate(-10deg); }
+            to { transform: translateX(0) scale(0.9) rotate(0deg); }
+        }
+
+        .unit-name {
+            font-size: 1.1rem;
+            color: #00E5FF;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .unit-role {
+            color: #FFB300;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .unit-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            font-size: 0.8rem;
+        }
+
+        .stat {
+            color: #888;
+        }
+
+        .portfolio-value {
+            font-size: 2rem;
+            color: #FFB300;
+            margin: 20px 0;
+            text-shadow: 0 0 10px #FFB300;
+        }
+
+        .countdown {
+            font-size: 3rem;
+            color: #FF2D2D;
+            margin: 30px 0;
+            text-shadow: 0 0 20px #FF2D2D;
+            animation: heartbeat 0.8s infinite;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .deploy-button {
+            background: linear-gradient(45deg, #FF2D2D, #FF6666);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 10px;
+            box-shadow: 0 0 20px rgba(255, 45, 45, 0.5);
+            animation: pulse-button 1s infinite;
+        }
+
+        @keyframes pulse-button {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 45, 45, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(255, 45, 45, 0.8); }
+        }
+
+        .cancel-button {
+            background: linear-gradient(45deg, #444, #666);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 10px;
+        }
+
+        .deploy-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 40px rgba(255, 45, 45, 0.8);
+        }
+
+        /* Battle screen */
+        .battle-interface {
+            width: 100%;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: 250px 1fr 250px;
+            gap: 20px;
+            height: 80vh;
+        }
+
+        .unit-sidebar {
+            background: rgba(15, 15, 26, 0.8);
+            border-radius: 10px;
+            padding: 15px;
+            overflow-y: auto;
+        }
+
+        .sidebar-title {
+            color: #00E5FF;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .captured-title {
+            color: #00FF88;
+        }
+
+        .battle-report {
+            background: rgba(15, 15, 26, 0.9);
+            border-radius: 10px;
+            padding: 20px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+        }
+
+        .report-line {
+            margin: 8px 0;
+            opacity: 0;
+            animation: typeIn 0.5s forwards;
+        }
+
+        @keyframes typeIn {
+            to { opacity: 1; }
+        }
+
+        .battle-score {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 45, 45, 0.2);
+            border: 2px solid #FF2D2D;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            z-index: 500;
+        }
+
+        /* Victory screen */
+        .victory-platform {
+            display: flex;
+            gap: 20px;
+            margin: 30px 0;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        .survivor-unit {
+            animation: victory-stance 2s ease-in-out;
+        }
+
+        @keyframes victory-stance {
+            from { transform: translateY(50px) rotate(-5deg); opacity: 0; }
+            to { transform: translateY(0) rotate(0deg); opacity: 1; }
+        }
+
+        .war-cascade {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        .war-coin {
+            position: absolute;
+            color: #FFB300;
+            font-size: 1.5rem;
+            font-weight: bold;
+            animation: coin-fly 2s ease-out forwards;
+        }
+
+        @keyframes coin-fly {
+            from { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            20% { opacity: 1; }
+            to { transform: translateY(-100px) rotate(720deg); opacity: 0; }
+        }
+
+        .blooded-badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #FF2D2D;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 50%;
+            font-size: 0.8rem;
+            font-weight: bold;
+            animation: badge-appear 1s ease-out;
+        }
+
+        @keyframes badge-appear {
+            from { transform: scale(0) rotate(-180deg); }
+            to { transform: scale(1) rotate(0deg); }
+        }
+
+        /* Defeat screen */
+        .ghost-outline {
+            opacity: 0.3;
+            filter: grayscale(1);
+            border: 2px dashed #666;
+        }
+
+        .defeat-message {
+            color: #FF2D2D;
+            font-size: 1.5rem;
+            font-style: italic;
+            margin-top: 30px;
+            text-shadow: 0 0 10px #FF2D2D;
+        }
+
+        .crumble {
+            animation: crumble-away 2s ease-in forwards;
+        }
+
+        @keyframes crumble-away {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(0.9) rotate(2deg); }
+            100% { opacity: 0; transform: scale(0.8) rotate(5deg) translateY(50px); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Danger particles background -->
+    <div class="danger-particles" id="particles"></div>
+    
+    <!-- Death Match border -->
+    <div class="death-border"></div>
+
+    <!-- Pre-match screen -->
+    <div class="screen active" id="prematch">
+        <h1 class="death-title">💀 DEATH MATCH</h1>
+        <div class="warning">⚠️ Units that die in this match are PERMANENTLY LOST ⚠️</div>
+        
+        <div class="army-display" id="playerArmy">
+            <!-- Generated army cards will go here -->
+        </div>
+        
+        <div class="portfolio-value" id="portfolioValue">$0.00 at stake</div>
+        
+        <div class="countdown" id="countdown">10</div>
+        
+        <button class="deploy-button" id="deployButton" onclick="startBattle()">
+            🔥 DEPLOY FOR REAL 🔥
+        </button>
+        <button class="cancel-button" onclick="cancelDeath()">BACK TO SAFETY</button>
+    </div>
+
+    <!-- Battle screen -->
+    <div class="screen" id="battle">
+        <div class="battle-score">
+            Units Lost: <span id="unitsLost">0</span> | Units Captured: <span id="unitsCaptured">0</span>
+        </div>
+        
+        <div class="battle-interface">
+            <div class="unit-sidebar">
+                <div class="sidebar-title">YOUR ARMY</div>
+                <div id="playerUnits"></div>
+            </div>
+            
+            <div class="battle-report" id="battleReport">
+                <div class="report-line">💀 DEATH MATCH INITIATED</div>
+                <div class="report-line">Armies locked in. There is no retreat.</div>
+                <div class="report-line">May the strongest survive...</div>
+            </div>
+            
+            <div class="unit-sidebar">
+                <div class="sidebar-title captured-title">CAPTURED</div>
+                <div id="capturedUnits"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Victory screen -->
+    <div class="screen" id="victory">
+        <h1 class="death-title">⚔️ VICTORY ETERNAL ⚔️</h1>
+        
+        <div class="victory-platform" id="victoryPlatform">
+            <!-- Surviving units -->
+        </div>
+        
+        <div id="capturedDisplay" style="margin: 30px 0;">
+            <h3 style="color: #00FF88;">SPOILS OF WAR</h3>
+            <div id="capturedTrophies"></div>
+        </div>
+        
+        <div style="margin: 30px 0;">
+            <h3 style="color: #FFB300;">WAR SPOILS</h3>
+            <div id="warEarned" style="font-size: 2rem; color: #FFB300;">+0 $WAR</div>
+        </div>
+        
+        <button class="deploy-button" onclick="newMatch()">BLOOD FOR MORE BLOOD</button>
+        <button class="cancel-button" onclick="returnHome()">WITHDRAW TO SAFETY</button>
+    </div>
+
+    <!-- Defeat screen -->
+    <div class="screen" id="defeat">
+        <h1 class="death-title">💀 DEFEAT</h1>
+        
+        <div id="devastation" style="margin: 30px 0;">
+            <!-- Ghost outlines of fallen units -->
+        </div>
+        
+        <div id="lostUnits" style="margin: 30px 0;">
+            <h3 style="color: #FF2D2D;">LOST FOREVER</h3>
+            <div id="lostDisplay"></div>
+        </div>
+        
+        <div class="defeat-message">
+            "Your army remembers. Rebuild. Return. Revenge."
+        </div>
+        
+        <button class="deploy-button" onclick="newMatch()">SEEK VENGEANCE</button>
+        <button class="cancel-button" onclick="returnHome()">RETREAT TO LICK WOUNDS</button>
+    </div>
+
+    <!-- War cascade effect -->
+    <div class="war-cascade" id="warCascade"></div>
+
+    <script>
+        // Audio context for heartbeat and combat sounds
+        let audioContext;
+        let heartbeatInterval;
+        let combatAudio;
+
+        // Game state
+        let gameState = {
+            playerArmy: [],
+            enemyArmy: [],
+            playerUnitsLost: 0,
+            enemyUnitsLost: 0,
+            battleLog: [],
+            portfolioValue: 0,
+            turn: 0
+        };
+
+        // Faction data (simplified for prototype)
+        const FACTIONS = {
+            'Iron Covenant': {
+                color: '#8A8A8A',
+                accent: '#B87333',
+                units: [
+                    { name: 'Iron Centurion', role: 'HQ', war: 7, res: 8, vel: 5, acc: 6, dis: 9, ins: 5, value: 150 },
+                    { name: 'Covenant Guard', role: 'Troops', war: 5, res: 6, vel: 4, acc: 5, dis: 7, ins: 3, value: 60 },
+                    { name: 'Steel Brothers', role: 'Troops', war: 4, res: 5, vel: 5, acc: 4, dis: 6, ins: 4, value: 50 },
+                    { name: 'Aegis Terminators', role: 'Elites', war: 8, res: 8, vel: 3, acc: 6, dis: 8, ins: 2, value: 125 },
+                    { name: 'Outrider Squadron', role: 'Fast Attack', war: 6, res: 4, vel: 8, acc: 7, dis: 6, ins: 4, value: 90 }
+                ]
+            },
+            'Swarm of Xeth': {
+                color: '#4A148C',
+                accent: '#C6FF00',
+                units: [
+                    { name: 'Hive Overmind', role: 'HQ', war: 6, res: 7, vel: 4, acc: 5, dis: 8, ins: 7, value: 140 },
+                    { name: 'Skitterling Brood', role: 'Troops', war: 4, res: 2, vel: 6, acc: 2, dis: 3, ins: 7, value: 30 },
+                    { name: 'Warrior Strain', role: 'Troops', war: 5, res: 4, vel: 5, acc: 3, dis: 4, ins: 5, value: 40 },
+                    { name: 'Ravener Pack', role: 'Elites', war: 7, res: 5, vel: 7, acc: 4, dis: 5, ins: 8, value: 80 },
+                    { name: 'Spore Pods', role: 'Fast Attack', war: 3, res: 3, vel: 9, acc: 6, dis: 2, ins: 6, value: 45 }
+                ]
+            },
+            'Void Pharaohs': {
+                color: '#1A1A2E',
+                accent: '#FFB300',
+                units: [
+                    { name: 'Void Pharaoh', role: 'HQ', war: 6, res: 8, vel: 3, acc: 7, dis: 9, ins: 4, value: 160 },
+                    { name: 'Necron Warriors', role: 'Troops', war: 4, res: 5, vel: 3, acc: 6, dis: 8, ins: 2, value: 45 },
+                    { name: 'Immortal Guard', role: 'Troops', war: 5, res: 6, vel: 3, acc: 7, dis: 8, ins: 2, value: 55 },
+                    { name: 'Wraith Constructs', role: 'Elites', war: 8, res: 7, vel: 4, acc: 5, dis: 9, ins: 3, value: 110 },
+                    { name: 'Destroyer Cult', role: 'Heavy Support', war: 9, res: 6, vel: 2, acc: 8, dis: 7, ins: 3, value: 130 }
+                ]
+            },
+            'Emerald Tide': {
+                color: '#BF360C',
+                accent: '#FFD600',
+                units: [
+                    { name: 'Big Boss', role: 'HQ', war: 8, res: 7, vel: 5, acc: 4, dis: 4, ins: 8, value: 135 },
+                    { name: 'Boyz Mob', role: 'Troops', war: 5, res: 4, vel: 4, acc: 3, dis: 3, ins: 6, value: 35 },
+                    { name: 'Choppa Boyz', role: 'Troops', war: 6, res: 4, vel: 5, acc: 2, dis: 3, ins: 7, value: 40 },
+                    { name: 'Nob Squad', role: 'Elites', war: 7, res: 6, vel: 4, acc: 4, dis: 5, ins: 7, value: 85 },
+                    { name: 'Waaagh Bikers', role: 'Fast Attack', war: 6, res: 3, vel: 8, acc: 3, dis: 2, ins: 8, value: 70 }
+                ]
+            }
+        };
+
+        // Initialize page
+        function init() {
+            createParticles();
+            generateArmies();
+            startCountdown();
+            initAudio();
+        }
+
+        // Create floating danger particles
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.width = particle.style.height = (Math.random() * 4 + 2) + 'px';
+                particle.style.animationDelay = Math.random() * 10 + 's';
+                particle.style.animationDuration = (Math.random() * 5 + 8) + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        // Generate random armies
+        function generateArmies() {
+            const factionNames = Object.keys(FACTIONS);
+            const playerFaction = factionNames[Math.floor(Math.random() * factionNames.length)];
+            const enemyFaction = factionNames[Math.floor(Math.random() * factionNames.length)];
+            
+            gameState.playerArmy = generateArmy(playerFaction, true);
+            gameState.enemyArmy = generateArmy(enemyFaction, false);
+            
+            displayArmy(gameState.playerArmy, 'playerArmy');
+            calculatePortfolioValue();
+        }
+
+        function generateArmy(factionName, isPlayer) {
+            const faction = FACTIONS[factionName];
+            const army = [];
+            
+            // Always include HQ
+            const hq = { ...faction.units.find(u => u.role === 'HQ'), faction: factionName, id: Math.random() };
+            army.push(hq);
+            
+            // Add 3-4 random units
+            const availableUnits = faction.units.filter(u => u.role !== 'HQ');
+            const armySize = 3 + Math.floor(Math.random() * 2);
+            
+            for (let i = 0; i < armySize; i++) {
+                const unit = { ...availableUnits[Math.floor(Math.random() * availableUnits.length)], faction: factionName, id: Math.random() };
+                army.push(unit);
+            }
+            
+            return army;
+        }
+
+        function displayArmy(army, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            army.forEach(unit => {
+                const card = createUnitCard(unit);
+                container.appendChild(card);
+            });
+        }
+
+        function createUnitCard(unit) {
+            const card = document.createElement('div');
+            card.className = 'unit-card';
+            card.id = `unit-${unit.id}`;
+            card.innerHTML = `
+                <div class="unit-name">${unit.name}</div>
+                <div class="unit-role">${unit.role} • ${unit.faction}</div>
+                <div class="unit-stats">
+                    <div class="stat">WAR: ${unit.war}</div>
+                    <div class="stat">RES: ${unit.res}</div>
+                    <div class="stat">VEL: ${unit.vel}</div>
+                    <div class="stat">ACC: ${unit.acc}</div>
+                    <div class="stat">DIS: ${unit.dis}</div>
+                    <div class="stat">INS: ${unit.ins}</div>
+                </div>
+                <div style="margin-top: 10px; color: #FFB300; font-size: 0.9rem;">$${unit.value}</div>
+            `;
+            return card;
+        }
+
+        function calculatePortfolioValue() {
+            const value = gameState.playerArmy.reduce((sum, unit) => sum + unit.value, 0);
+            gameState.portfolioValue = value;
+            document.getElementById('portfolioValue').textContent = `$${value}.00 at stake`;
+        }
+
+        // Initialize audio
+        function initAudio() {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            } catch (e) {
+                console.warn('Audio not supported');
+            }
+        }
+
+        // Start countdown with heartbeat
+        function startCountdown() {
+            let count = 10;
+            const countdownEl = document.getElementById('countdown');
+            
+            const countInterval = setInterval(() => {
+                count--;
+                countdownEl.textContent = count;
+                
+                if (count <= 0) {
+                    clearInterval(countInterval);
+                    countdownEl.textContent = 'DEPLOY!';
+                }
+            }, 1000);
+
+            // Heartbeat audio (Web Audio API)
+            if (audioContext) {
+                heartbeatInterval = setInterval(() => {
+                    playHeartbeat();
+                }, 800);
+            }
+        }
+
+        function playHeartbeat() {
+            if (!audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(60, audioContext.currentTime);
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.1);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
+
+        function playCombatSound(frequency, duration) {
+            if (!audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+            oscillator.type = 'sawtooth';
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.05, audioContext.currentTime + 0.05);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration);
+        }
+
+        // Start battle simulation
+        function startBattle() {
+            clearInterval(heartbeatInterval);
+            switchScreen('battle');
+            
+            // Copy armies to sidebars
+            displayArmy(gameState.playerArmy, 'playerUnits');
+            
+            // Start battle simulation
+            setTimeout(() => simulateBattle(), 1000);
+        }
+
+        function simulateBattle() {
+            const report = document.getElementById('battleReport');
+            let delay = 0;
+            
+            // Battle simulation loop
+            while (gameState.playerArmy.length > 0 && gameState.enemyArmy.length > 0 && gameState.turn < 20) {
+                gameState.turn++;
+                
+                setTimeout(() => {
+                    const playerUnit = gameState.playerArmy[Math.floor(Math.random() * gameState.playerArmy.length)];
+                    const enemyUnit = gameState.enemyArmy[Math.floor(Math.random() * gameState.enemyArmy.length)];
+                    
+                    // Combat resolution using design bible formula: d100 + (WAR × 8) vs 50 + (VEL × 3)
+                    const playerRoll = Math.floor(Math.random() * 100) + 1 + (playerUnit.war * 8);
+                    const enemyDefense = 50 + (enemyUnit.vel * 3);
+                    const enemyRoll = Math.floor(Math.random() * 100) + 1 + (enemyUnit.war * 8);
+                    const playerDefense = 50 + (playerUnit.vel * 3);
+                    
+                    let logMessage = '';
+                    
+                    // Player attacks enemy
+                    if (playerRoll >= enemyDefense) {
+                        const damage = Math.max(1, playerUnit.war - enemyUnit.res + Math.floor(Math.random() * 6) - 2);
+                        logMessage = `🗡️ ${playerUnit.name} strikes ${enemyUnit.name} for ${damage} damage!`;
+                        
+                        if (damage >= enemyUnit.res || Math.random() < 0.3) {
+                            // Enemy dies
+                            gameState.enemyArmy = gameState.enemyArmy.filter(u => u.id !== enemyUnit.id);
+                            gameState.enemyUnitsLost++;
+                            logMessage += ` ${enemyUnit.name} is ELIMINATED!`;
+                            
+                            // Add to captured
+                            addCapturedUnit(enemyUnit);
+                            playCombatSound(200, 0.5);
+                        }
+                    } else {
+                        logMessage = `🛡️ ${enemyUnit.name} deflects ${playerUnit.name}'s attack!`;
+                    }
+                    
+                    addBattleLog(logMessage);
+                    
+                    // Enemy counter-attack (if still alive)
+                    setTimeout(() => {
+                        if (gameState.enemyArmy.length > 0 && gameState.playerArmy.length > 0) {
+                            const counterEnemy = gameState.enemyArmy[Math.floor(Math.random() * gameState.enemyArmy.length)];
+                            const counterPlayer = gameState.playerArmy[Math.floor(Math.random() * gameState.playerArmy.length)];
+                            
+                            if (enemyRoll >= playerDefense) {
+                                const damage = Math.max(1, counterEnemy.war - counterPlayer.res + Math.floor(Math.random() * 6) - 2);
+                                let counterMsg = `💀 ${counterEnemy.name} retaliates against ${counterPlayer.name} for ${damage} damage!`;
+                                
+                                if (damage >= counterPlayer.res || Math.random() < 0.25) {
+                                    // Player unit dies
+                                    gameState.playerArmy = gameState.playerArmy.filter(u => u.id !== counterPlayer.id);
+                                    gameState.playerUnitsLost++;
+                                    counterMsg += ` ${counterPlayer.name} is LOST FOREVER!`;
+                                    
+                                    // Crack the unit card
+                                    crackUnit(counterPlayer.id);
+                                    playCombatSound(100, 1.0);
+                                }
+                            } else {
+                                let counterMsg = `⚔️ ${counterPlayer.name} parries ${counterEnemy.name}'s strike!`;
+                            }
+                            
+                            addBattleLog(counterMsg);
+                            updateScore();
+                        }
+                    }, 1500);
+                    
+                }, delay);
+                
+                delay += 3000;
+            }
+            
+            // End battle
+            setTimeout(() => {
+                if (gameState.playerArmy.length > 0) {
+                    addBattleLog('🏆 VICTORY! The field is yours!');
+                    setTimeout(() => showVictory(), 2000);
+                } else {
+                    addBattleLog('💀 DEFEAT... Your army is broken.');
+                    setTimeout(() => showDefeat(), 2000);
+                }
+            }, delay + 2000);
+        }
+
+        function addBattleLog(message) {
+            const report = document.getElementById('battleReport');
+            const line = document.createElement('div');
+            line.className = 'report-line';
+            line.textContent = message;
+            report.appendChild(line);
+            report.scrollTop = report.scrollHeight;
+        }
+
+        function crackUnit(unitId) {
+            const card = document.getElementById(`unit-${unitId}`);
+            if (card) {
+                card.classList.add('cracked');
+            }
+        }
+
+        function addCapturedUnit(unit) {
+            const captured = document.getElementById('capturedUnits');
+            const card = createUnitCard(unit);
+            card.classList.add('captured');
+            card.innerHTML += '<div style="color: #00FF88; font-size: 0.8rem; margin-top: 5px;">NEW OWNER</div>';
+            captured.appendChild(card);
+        }
+
+        function updateScore() {
+            document.getElementById('unitsLost').textContent = gameState.playerUnitsLost;
+            document.getElementById('unitsCaptured').textContent = gameState.enemyUnitsLost;
+        }
+
+        function showVictory() {
+            switchScreen('victory');
+            
+            // Show surviving units
+            const platform = document.getElementById('victoryPlatform');
+            platform.innerHTML = '';
+            gameState.playerArmy.forEach(unit => {
+                const card = createUnitCard(unit);
+                card.classList.add('survivor-unit');
+                // Add blooded badge
+                const badge = document.createElement('div');
+                badge.className = 'blooded-badge';
+                badge.textContent = 'BLOODED';
+                card.style.position = 'relative';
+                card.appendChild(badge);
+                platform.appendChild(card);
+            });
+            
+            // Show captured trophies
+            const trophies = document.getElementById('capturedTrophies');
+            trophies.innerHTML = document.getElementById('capturedUnits').innerHTML;
+            
+            // War rewards
+            const warEarned = gameState.enemyUnitsLost * 50 + (gameState.playerArmy.length * 25);
+            document.getElementById('warEarned').textContent = `+${warEarned} $WAR`;
+            
+            // Store victory in localStorage
+            let deathMatchHistory = JSON.parse(localStorage.getItem('deathMatchHistory') || '[]');
+            deathMatchHistory.push({
+                result: 'victory',
+                unitsLost: gameState.playerUnitsLost,
+                unitsCaptured: gameState.enemyUnitsLost,
+                warEarned: warEarned,
+                timestamp: Date.now()
+            });
+            localStorage.setItem('deathMatchHistory', JSON.stringify(deathMatchHistory));
+            
+            // War cascade effect
+            setTimeout(() => createWarCascade(warEarned), 1000);
+        }
+
+        function showDefeat() {
+            switchScreen('defeat');
+            
+            // Show devastation
+            const devastation = document.getElementById('devastation');
+            const lost = document.getElementById('lostDisplay');
+            devastation.innerHTML = '';
+            lost.innerHTML = '';
+            
+            // Calculate which units were lost
+            const allPlayerUnits = [...gameState.playerArmy]; // Survivors
+            
+            // Create ghost outlines for fallen units (we'll simulate this)
+            for (let i = 0; i < gameState.playerUnitsLost; i++) {
+                const ghostCard = document.createElement('div');
+                ghostCard.className = 'unit-card ghost-outline';
+                ghostCard.innerHTML = `
+                    <div class="unit-name">FALLEN WARRIOR</div>
+                    <div class="unit-role">Lost to the void...</div>
+                `;
+                devastation.appendChild(ghostCard);
+                
+                const lostCard = createUnitCard({
+                    name: 'Lost Unit #' + (i + 1),
+                    role: 'Forever Gone',
+                    faction: 'The Void',
+                    war: '?', res: '?', vel: '?', acc: '?', dis: '?', ins: '?',
+                    value: Math.floor(Math.random() * 100) + 50
+                });
+                lostCard.classList.add('crumble');
+                lost.appendChild(lostCard);
+            }
+            
+            // Store defeat in localStorage
+            let deathMatchHistory = JSON.parse(localStorage.getItem('deathMatchHistory') || '[]');
+            deathMatchHistory.push({
+                result: 'defeat',
+                unitsLost: gameState.playerUnitsLost,
+                unitsCaptured: gameState.enemyUnitsLost,
+                timestamp: Date.now()
+            });
+            localStorage.setItem('deathMatchHistory', JSON.stringify(deathMatchHistory));
+        }
+
+        function createWarCascade(amount) {
+            const cascade = document.getElementById('warCascade');
+            const coinCount = Math.min(amount / 10, 20);
+            
+            for (let i = 0; i < coinCount; i++) {
+                setTimeout(() => {
+                    const coin = document.createElement('div');
+                    coin.className = 'war-coin';
+                    coin.textContent = '+' + Math.floor(amount / coinCount) + ' $WAR';
+                    coin.style.left = (Math.random() * 80 + 10) + '%';
+                    coin.style.animationDelay = Math.random() * 0.5 + 's';
+                    cascade.appendChild(coin);
+                    
+                    setTimeout(() => coin.remove(), 2000);
+                }, i * 100);
+            }
+        }
+
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function cancelDeath() {
+            if (confirm('Are you sure you want to retreat to safety? The battlefield awaits...')) {
+                window.location.href = 'index.html';
+            }
+        }
+
+        function returnHome() {
+            window.location.href = 'index.html';
+        }
+
+        function newMatch() {
+            // Reset game state
+            gameState = {
+                playerArmy: [],
+                enemyArmy: [],
+                playerUnitsLost: 0,
+                enemyUnitsLost: 0,
+                battleLog: [],
+                portfolioValue: 0,
+                turn: 0
+            };
+            
+            // Reset UI
+            document.getElementById('battleReport').innerHTML = `
+                <div class="report-line">💀 DEATH MATCH INITIATED</div>
+                <div class="report-line">Armies locked in. There is no retreat.</div>
+                <div class="report-line">May the strongest survive...</div>
+            `;
+            document.getElementById('capturedUnits').innerHTML = '';
+            document.getElementById('unitsLost').textContent = '0';
+            document.getElementById('unitsCaptured').textContent = '0';
+            
+            // Generate new armies
+            generateArmies();
+            
+            // Back to pre-match
+            switchScreen('prematch');
+            startCountdown();
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+    
+    <script src="nav.js"></script>
+</body>
+</html>
