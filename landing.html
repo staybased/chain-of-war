@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chain of War - Mint. Deploy. Conquer.</title>
+    <meta name="description" content="The first on-chain tactical wargame where your NFT army fights for real stakes. Mint War Chests, deploy tactical armies, conquer the battlefield.">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #0A0A0F;
+            color: #FFFFFF;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Particles Animation */
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #FFD700;
+            border-radius: 50%;
+            animation: float 8s infinite linear;
+            box-shadow: 0 0 4px #FFD700;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-20vh) translateX(30px);
+                opacity: 0;
+            }
+        }
+
+        /* Section Fade In */
+        .section {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Section Divider */
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #00E5FF, transparent);
+            margin: 80px 0;
+        }
+
+        /* HERO SECTION */
+        .hero {
+            height: 100vh;
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.7)), url('assets/bg-command-center.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-logo {
+            width: 200px;
+            height: auto;
+            margin-bottom: 40px;
+            filter: drop-shadow(0 0 20px rgba(0, 229, 255, 0.3));
+            mix-blend-mode: screen;
+        }
+
+        .hero-tagline {
+            font-size: 48px;
+            font-weight: 900;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+            background: linear-gradient(45deg, #FFFFFF, #00E5FF);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 16px;
+            color: #AAA;
+            max-width: 600px;
+            margin-bottom: 50px;
+            line-height: 1.5;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 100px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #00E5FF, #0099CC);
+            border: none;
+            color: #000;
+            padding: 16px 32px;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-radius: 30px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 229, 255, 0.6);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid #FFD700;
+            color: #FFD700;
+            padding: 14px 30px;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-radius: 30px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: #FFD700;
+            color: #000;
+            transform: translateY(-2px);
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #00E5FF;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            40% {
+                transform: translateX(-50%) translateY(-10px);
+            }
+            60% {
+                transform: translateX(-50%) translateY(-5px);
+            }
+        }
+
+        /* WHAT IS CHAIN OF WAR SECTION */
+        .what-section {
+            background: #0F0F17;
+            padding: 100px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 28px;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 60px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 2px;
+            background: #00E5FF;
+            margin: 20px auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-top: 60px;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            border-radius: 12px;
+            padding: 40px 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0, 229, 255, 0.5);
+            box-shadow: 0 20px 40px rgba(0, 229, 255, 0.1);
+        }
+
+        .feature-icon {
+            font-size: 40px;
+            margin-bottom: 20px;
+        }
+
+        .feature-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #00E5FF;
+        }
+
+        .feature-description {
+            font-size: 14px;
+            color: #CCC;
+            line-height: 1.6;
+        }
+
+        /* FACTIONS SECTION */
+        .factions-section {
+            background: #050511;
+            padding: 100px 20px;
+        }
+
+        .factions-scroll {
+            display: flex;
+            gap: 30px;
+            padding: 40px 20px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            animation: autoScroll 60s linear infinite;
+        }
+
+        .factions-scroll:hover {
+            animation-play-state: paused;
+        }
+
+        @keyframes autoScroll {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        .faction-card {
+            min-width: 200px;
+            height: 280px;
+            background: linear-gradient(135deg, rgba(0, 229, 255, 0.1), rgba(255, 215, 0, 0.1));
+            border-radius: 12px;
+            padding: 30px 20px;
+            text-align: center;
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .faction-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 20px 40px rgba(0, 229, 255, 0.3);
+        }
+
+        .faction-emblem {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .faction-name {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .faction-description {
+            font-size: 11px;
+            color: #AAA;
+            line-height: 1.4;
+        }
+
+        /* HOW IT WORKS SECTION */
+        .how-section {
+            background: #0A0A0F;
+            padding: 100px 20px;
+        }
+
+        .steps-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1000px;
+            margin: 60px auto;
+            position: relative;
+        }
+
+        .step {
+            text-align: center;
+            max-width: 200px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .step-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: linear-gradient(45deg, #00E5FF, #0099CC);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            color: #000;
+            box-shadow: 0 10px 20px rgba(0, 229, 255, 0.3);
+        }
+
+        .step-number {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            width: 24px;
+            height: 24px;
+            background: #FFD700;
+            color: #000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .step-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #00E5FF;
+            text-transform: uppercase;
+        }
+
+        .step-description {
+            font-size: 12px;
+            color: #AAA;
+            line-height: 1.4;
+        }
+
+        .connector-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00E5FF, transparent);
+            z-index: 1;
+        }
+
+        /* WAR CHEST PREVIEW SECTION */
+        .chests-section {
+            background: #0F0F17;
+            padding: 100px 20px;
+        }
+
+        .chests-grid {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 60px 0;
+        }
+
+        .chest-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            transition: all 0.3s ease;
+            max-width: 250px;
+        }
+
+        .chest-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(255, 215, 0, 0.2);
+        }
+
+        .chest-image {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 20px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .chest-label {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #FFD700;
+            text-transform: uppercase;
+        }
+
+        .chest-price {
+            font-size: 18px;
+            font-weight: 900;
+            margin-bottom: 5px;
+            color: #00E5FF;
+        }
+
+        .chest-units {
+            font-size: 12px;
+            color: #AAA;
+            margin-bottom: 20px;
+        }
+
+        /* TOKEN SECTION */
+        .token-section {
+            background: #050511;
+            padding: 100px 20px;
+        }
+
+        .token-container {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .token-image {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 30px;
+            background: url('assets/war-token-3d.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .token-title {
+            font-size: 36px;
+            font-weight: 900;
+            margin-bottom: 40px;
+            color: #FFD700;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+
+        .token-stats {
+            display: flex;
+            justify-content: space-between;
+            margin: 40px 0;
+            padding: 30px;
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .token-stat {
+            text-align: center;
+        }
+
+        .token-stat-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #FFD700;
+            margin-bottom: 5px;
+        }
+
+        .token-stat-label {
+            font-size: 10px;
+            color: #AAA;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* GAME MODES SECTION */
+        .modes-section {
+            background: #0A0A0F;
+            padding: 100px 20px;
+        }
+
+        .modes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 60px auto;
+            max-width: 1000px;
+        }
+
+        .mode-card {
+            padding: 40px 30px;
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mode-card.skirmish {
+            background: rgba(0, 229, 255, 0.1);
+            border: 1px solid #00E5FF;
+        }
+
+        .mode-card.warzone {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid #FFC107;
+        }
+
+        .mode-card.deathmatch {
+            background: rgba(220, 53, 69, 0.1);
+            border: 1px solid #DC3545;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 10px rgba(220, 53, 69, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(220, 53, 69, 0.6);
+            }
+        }
+
+        .mode-icon {
+            font-size: 40px;
+            margin-bottom: 20px;
+        }
+
+        .mode-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .mode-description {
+            font-size: 14px;
+            color: #CCC;
+            line-height: 1.6;
+        }
+
+        /* ROADMAP SECTION */
+        .roadmap-section {
+            background: #0F0F17;
+            padding: 100px 20px;
+        }
+
+        .timeline {
+            max-width: 800px;
+            margin: 60px auto;
+            position: relative;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 30px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, #00E5FF, #FFD700, #FF6B6B);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 60px;
+            padding-left: 80px;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: 22px;
+            top: 0;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #00E5FF;
+            border: 3px solid #0A0A0F;
+            z-index: 2;
+        }
+
+        .timeline-item.active .timeline-dot {
+            background: #FFD700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+
+        .timeline-content {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 20px;
+            border-left: 3px solid #00E5FF;
+        }
+
+        .timeline-item.active .timeline-content {
+            border-left-color: #FFD700;
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .timeline-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: #00E5FF;
+        }
+
+        .timeline-item.active .timeline-title {
+            color: #FFD700;
+        }
+
+        .timeline-date {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 10px;
+        }
+
+        .timeline-description {
+            font-size: 14px;
+            color: #CCC;
+            line-height: 1.5;
+        }
+
+        /* FOOTER */
+        .footer {
+            background: #050511;
+            padding: 60px 20px 40px;
+            text-align: center;
+            border-top: 1px solid rgba(0, 229, 255, 0.1);
+        }
+
+        .footer-logo {
+            width: 60px;
+            height: auto;
+            margin-bottom: 30px;
+            opacity: 0.8;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .footer-link {
+            color: #888;
+            text-decoration: none;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: color 0.3s ease;
+        }
+
+        .footer-link:hover {
+            color: #00E5FF;
+        }
+
+        .footer-text {
+            color: #666;
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .hero-tagline {
+                font-size: 32px;
+                letter-spacing: 4px;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                gap: 15px;
+                align-items: center;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .steps-container {
+                flex-direction: column;
+                gap: 40px;
+            }
+
+            .connector-line {
+                display: none;
+            }
+
+            .chests-grid {
+                flex-direction: column;
+                align-items: center;
+                gap: 30px;
+            }
+
+            .token-stats {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .modes-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .timeline {
+                margin-left: 20px;
+            }
+
+            .timeline-item {
+                padding-left: 60px;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <div class="particles" id="particles"></div>
+        <img src="assets/logo.png" alt="Chain of War" class="hero-logo">
+        <h1 class="hero-tagline">MINT. DEPLOY. CONQUER.</h1>
+        <p class="hero-subtitle">The first on-chain tactical wargame where your NFT army fights for real stakes</p>
+        <div class="hero-buttons">
+            <a href="index.html" class="btn-primary">ENTER THE WAR</a>
+            <a href="warchest.html" class="btn-secondary">OPEN WAR CHEST</a>
+        </div>
+        <div class="scroll-indicator">
+            <div style="font-size: 20px;">⌄</div>
+        </div>
+    </section>
+
+    <!-- WHAT IS CHAIN OF WAR SECTION -->
+    <section class="what-section section">
+        <div class="container">
+            <h2 class="section-title">What is Chain of War?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎴</div>
+                    <h3 class="feature-title">COLLECT</h3>
+                    <p class="feature-description">Mint War Chests containing full NFT armies. 10 factions, 100 unique units, 5 rarity tiers.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚔️</div>
+                    <h3 class="feature-title">BATTLE</h3>
+                    <p class="feature-description">Deploy your army on hex-grid battlefields. Real-time tactics or async simulation. Every move matters.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💀</div>
+                    <h3 class="feature-title">RISK IT ALL</h3>
+                    <p class="feature-description">Death Match: permanent NFT death. Winner takes the loser's fallen units. Real stakes. Real rewards.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- FACTIONS SECTION -->
+    <section class="factions-section section">
+        <div class="container">
+            <h2 class="section-title">Choose Your Faction</h2>
+            <div class="factions-scroll" id="factions-scroll">
+                <div class="faction-card">
+                    <div class="faction-emblem" style="background-image: url('assets/emblem-iron-covenant.png')"></div>
+                    <h3 class="faction-name">Iron Covenant</h3>
+                    <p class="faction-description">Technological supremacists wielding advanced machinery and energy weapons.</p>
+                </div>
+                <div class="faction-card">
+                    <div class="faction-emblem" style="background-image: url('assets/emblem-emerald-tide.png')"></div>
+                    <h3 class="faction-name">Emerald Tide</h3>
+                    <p class="faction-description">Bio-engineered forces that merge nature with warfare technology.</p>
+                </div>
+                <div class="faction-card">
+                    <div class="faction-emblem" style="background-image: url('assets/emblem-void-pharaohs.png')"></div>
+                    <h3 class="faction-name">Void Pharaohs</h3>
+                    <p class="faction-description">Ancient rulers commanding undead legions and dark magic.</p>
+                </div>
+                <div class="faction-card">
+                    <div class="faction-emblem" style="background-image: url('assets/emblem-celestial-order.png')"></div>
+                    <h3 class="faction-name">Celestial Order</h3>
+                    <p class="faction-description">Divine warriors blessed with holy light and protective barriers.</p>
+                </div>
+                <div class="faction-card">
+                    <div class="faction-emblem" style="background-image: url('assets/emblem-warp-touched.png')"></div>
+                    <h3 class="faction-name">Warp Touched</h3>
+                    <p class="faction-description">Reality-bending entities that manipulate space and time.</p>
+                </div>
+                <div class="faction-card">
+                    <div class="faction-emblem" style="background-image: url('assets/emblem-steel-legion.png')"></div>
+                    <h3 class="faction-name">Steel Legion</h3>
+                    <p class="faction-description">Military industrial complex with heavy armor and artillery.</p>
+                </div>
+                <div class="faction-card">
+                    <div class="faction-emblem" style="background-image: url('assets/emblem-shadow-kin.png')"></div>
+                    <h3 class="faction-name">Shadow Kin</h3>
+                    <p class="faction-description">Stealth specialists that strike from darkness with precision.</p>
+                </div>
+                <div class="faction-card">
+                    <div class="faction-emblem" style="background-image: url('assets/emblem-bone-prophets.png')"></div>
+                    <h3 class="faction-name">Bone Prophets</h3>
+                    <p class="faction-description">Necromantic cult that raises the dead to serve in eternal war.</p>
+                </div>
+                <div class="faction-card">
+                    <div class="faction-emblem" style="background-image: url('assets/emblem-swarm-of-xeth.png')"></div>
+                    <h3 class="faction-name">Swarm of Xeth</h3>
+                    <p class="faction-description">Insectoid collective mind with overwhelming numbers.</p>
+                </div>
+                <div class="faction-card">
+                    <div class="faction-emblem" style="background-image: url('assets/emblem-apex-hunters.png')"></div>
+                    <h3 class="faction-name">Apex Hunters</h3>
+                    <p class="faction-description">Elite predators that hunt the strongest foes for sport and glory.</p>
+                </div>
+                <!-- Duplicate for seamless scroll -->
+                <div class="faction-card">
+                    <div class="faction-emblem" style="background-image: url('assets/emblem-iron-covenant.png')"></div>
+                    <h3 class="faction-name">Iron Covenant</h3>
+                    <p class="faction-description">Technological supremacists wielding advanced machinery and energy weapons.</p>
+                </div>
+                <div class="faction-card">
+                    <div class="faction-emblem" style="background-image: url('assets/emblem-emerald-tide.png')"></div>
+                    <h3 class="faction-name">Emerald Tide</h3>
+                    <p class="faction-description">Bio-engineered forces that merge nature with warfare technology.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- HOW IT WORKS SECTION -->
+    <section class="how-section section">
+        <div class="container">
+            <h2 class="section-title">How It Works</h2>
+            <div class="steps-container">
+                <div class="connector-line"></div>
+                <div class="step">
+                    <div class="step-icon">
+                        <div class="step-number">1</div>
+                        📦
+                    </div>
+                    <h3 class="step-title">MINT</h3>
+                    <p class="step-description">Purchase a War Chest containing a full army</p>
+                </div>
+                <div class="step">
+                    <div class="step-icon">
+                        <div class="step-number">2</div>
+                        🛠️
+                    </div>
+                    <h3 class="step-title">BUILD</h3>
+                    <p class="step-description">Customize your army with the perfect unit composition</p>
+                </div>
+                <div class="step">
+                    <div class="step-icon">
+                        <div class="step-number">3</div>
+                        ⚔️
+                    </div>
+                    <h3 class="step-title">BATTLE</h3>
+                    <p class="step-description">Deploy on hex-grid battlefields against other commanders</p>
+                </div>
+                <div class="step">
+                    <div class="step-icon">
+                        <div class="step-number">4</div>
+                        💰
+                    </div>
+                    <h3 class="step-title">EARN</h3>
+                    <p class="step-description">Win $WAR tokens, capture enemy NFTs in Death Match</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- WAR CHEST PREVIEW SECTION -->
+    <section class="chests-section section">
+        <div class="container">
+            <h2 class="section-title">War Chests</h2>
+            <div class="chests-grid">
+                <div class="chest-card">
+                    <div class="chest-image" style="background-image: url('assets/chest-recruit.png')"></div>
+                    <h3 class="chest-label">Recruit</h3>
+                    <div class="chest-price">0.02 ETH</div>
+                    <div class="chest-units">4-5 units</div>
+                </div>
+                <div class="chest-card">
+                    <div class="chest-image" style="background-image: url('assets/chest-veteran.png')"></div>
+                    <h3 class="chest-label">Veteran</h3>
+                    <div class="chest-price">0.05 ETH</div>
+                    <div class="chest-units">5-7 units</div>
+                </div>
+                <div class="chest-card">
+                    <div class="chest-image" style="background-image: url('assets/chest-commander.png')"></div>
+                    <h3 class="chest-label">Commander</h3>
+                    <div class="chest-price">0.10 ETH</div>
+                    <div class="chest-units">7-9 units</div>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 40px;">
+                <a href="warchest.html" class="btn-primary">OPEN A CHEST</a>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- TOKEN SECTION -->
+    <section class="token-section section">
+        <div class="container">
+            <div class="token-container">
+                <div class="token-image"></div>
+                <h2 class="token-title">$WAR</h2>
+                <div class="token-stats">
+                    <div class="token-stat">
+                        <div class="token-stat-value">1B</div>
+                        <div class="token-stat-label">Total Supply</div>
+                    </div>
+                    <div class="token-stat">
+                        <div class="token-stat-value">40%</div>
+                        <div class="token-stat-label">to Players</div>
+                    </div>
+                    <div class="token-stat">
+                        <div class="token-stat-value">13</div>
+                        <div class="token-stat-label">Burn Mechanisms</div>
+                    </div>
+                    <div class="token-stat">
+                        <div class="token-stat-value">3,200</div>
+                        <div class="token-stat-label">Deflationary at DAU</div>
+                    </div>
+                </div>
+                <a href="economy.html" class="btn-secondary">VIEW ECONOMY</a>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- GAME MODES SECTION -->
+    <section class="modes-section section">
+        <div class="container">
+            <h2 class="section-title">Game Modes</h2>
+            <div class="modes-grid">
+                <div class="mode-card skirmish">
+                    <div class="mode-icon">⚡</div>
+                    <h3 class="mode-title">SKIRMISH</h3>
+                    <p class="mode-description">Async battles. Deploy and go. Results in minutes. Low risk, steady rewards.</p>
+                </div>
+                <div class="mode-card warzone">
+                    <div class="mode-icon">🎯</div>
+                    <h3 class="mode-title">WARZONE</h3>
+                    <p class="mode-description">Real-time turn-based tactics. 15-30 min matches. 2.5× rewards.</p>
+                </div>
+                <div class="mode-card deathmatch">
+                    <div class="mode-icon">💀</div>
+                    <h3 class="mode-title">DEATH MATCH</h3>
+                    <p class="mode-description">Permanent NFT death. Winner takes all. 5× rewards. Not for the faint.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ROADMAP SECTION -->
+    <section class="roadmap-section section">
+        <div class="container">
+            <h2 class="section-title">Roadmap</h2>
+            <div class="timeline">
+                <div class="timeline-item active">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <h3 class="timeline-title">Phase 1: Foundation</h3>
+                        <div class="timeline-date">Months 1-3</div>
+                        <p class="timeline-description">Design, smart contracts, community</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <h3 class="timeline-title">Phase 2: Alpha</h3>
+                        <div class="timeline-date">Months 4-6</div>
+                        <p class="timeline-description">Closed alpha, Skirmish mode, playtesting</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <h3 class="timeline-title">Phase 3: Beta</h3>
+                        <div class="timeline-date">Months 7-9</div>
+                        <p class="timeline-description">Public beta, Warzone, marketplace</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <h3 class="timeline-title">Phase 4: Launch</h3>
+                        <div class="timeline-date">Months 10-12</div>
+                        <p class="timeline-description">Mainnet, token launch, Season 1</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <h3 class="timeline-title">Phase 5: Growth</h3>
+                        <div class="timeline-date">Year 2+</div>
+                        <p class="timeline-description">New factions, Guild Wars, esports</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <img src="assets/logo.png" alt="Chain of War" class="footer-logo">
+        <div class="footer-links">
+            <a href="index.html" class="footer-link">Battle</a>
+            <a href="armory.html" class="footer-link">Armory</a>
+            <a href="economy.html" class="footer-link">Economy</a>
+            <a href="#" class="footer-link">Docs</a>
+            <a href="#" class="footer-link">Discord</a>
+            <a href="#" class="footer-link">Twitter</a>
+        </div>
+        <div class="footer-text">
+            <p>© 2026 Chain of War. All rights reserved.</p>
+            <p>Built with 🔥 by CoryTheLight</p>
+        </div>
+    </footer>
+
+    <!-- Include shared navigation -->
+    <script src="nav.js"></script>
+
+    <script>
+        // Particles animation
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDuration = (Math.random() * 3 + 5) + 's';
+            particle.style.animationDelay = Math.random() * 2 + 's';
+            document.getElementById('particles').appendChild(particle);
+
+            // Remove particle after animation
+            setTimeout(() => {
+                if (particle.parentNode) {
+                    particle.parentNode.removeChild(particle);
+                }
+            }, 8000);
+        }
+
+        // Create particles continuously
+        setInterval(createParticle, 300);
+
+        // Intersection Observer for fade-in animation
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all sections
+        document.querySelectorAll('.section').forEach(section => {
+            observer.observe(section);
+        });
+
+        // Parallax effect for hero background
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const hero = document.querySelector('.hero');
+            if (hero) {
+                hero.style.transform = `translateY(${scrolled * 0.5}px)`;
+            }
+        });
+    </script>
+</body>
+</html>
