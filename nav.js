@@ -99,7 +99,7 @@
                 {
                     label: 'PLAY',
                     links: [
-                        { label: 'BATTLE', href: 'battle.html', page: 'battle' },
+                        { label: 'BATTLE', href: 'index.html', page: 'index' },
                         { label: 'DEATH MATCH', href: 'deathmatch.html', page: 'deathmatch' },
                         { label: 'TOURNAMENT', href: 'tournament.html', page: 'tournament' }
                     ]
@@ -110,7 +110,7 @@
                         { label: 'WAR CHEST', href: 'warchest.html', page: 'warchest' },
                         { label: 'ARMORY', href: 'armory.html', page: 'armory' },
                         { label: 'FORGE', href: 'forge.html', page: 'forge' },
-                        { label: 'MARKET', href: 'market.html', page: 'market' }
+                        { label: 'MARKET', href: 'marketplace.html', page: 'marketplace' }
                     ]
                 },
                 {
