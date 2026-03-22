@@ -329,19 +329,66 @@
         }
 
         .faction-card:hover {
-            transform: scale(1.05) translateY(-10px);
+            transform: scale(1.1) translateY(-10px);
             box-shadow: 0 20px 40px rgba(0, 229, 255, 0.3);
             border-color: rgba(0, 229, 255, 0.8);
         }
 
+        .faction-card:hover .faction-emblem {
+            transform: scale(1.1);
+            filter: drop-shadow(0 0 20px rgba(0, 229, 255, 0.8));
+        }
+
+        /* Faction-specific hover colors */
+        .faction-card:nth-child(1):hover .faction-emblem { /* Iron Covenant */
+            filter: drop-shadow(0 0 20px rgba(138, 138, 138, 0.8)); /* Steel gray */
+        }
+
+        .faction-card:nth-child(2):hover .faction-emblem { /* Emerald Tide */
+            filter: drop-shadow(0 0 20px rgba(50, 205, 50, 0.8)); /* Green */
+        }
+
+        .faction-card:nth-child(3):hover .faction-emblem { /* Void Pharaohs */
+            filter: drop-shadow(0 0 20px rgba(128, 0, 128, 0.8)); /* Purple */
+        }
+
+        .faction-card:nth-child(4):hover .faction-emblem { /* Celestial Order */
+            filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.8)); /* Gold */
+        }
+
+        .faction-card:nth-child(5):hover .faction-emblem { /* Warp Touched */
+            filter: drop-shadow(0 0 20px rgba(255, 20, 147, 0.8)); /* Deep pink */
+        }
+
+        .faction-card:nth-child(6):hover .faction-emblem { /* Steel Legion */
+            filter: drop-shadow(0 0 20px rgba(169, 169, 169, 0.8)); /* Dark gray */
+        }
+
+        .faction-card:nth-child(7):hover .faction-emblem { /* Shadow Kin */
+            filter: drop-shadow(0 0 20px rgba(75, 0, 130, 0.8)); /* Indigo */
+        }
+
+        .faction-card:nth-child(8):hover .faction-emblem { /* Bone Prophets */
+            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.8)); /* White */
+        }
+
+        .faction-card:nth-child(9):hover .faction-emblem { /* Swarm of Xeth */
+            filter: drop-shadow(0 0 20px rgba(255, 69, 0, 0.8)); /* Orange red */
+        }
+
+        .faction-card:nth-child(10):hover .faction-emblem { /* Apex Hunters */
+            filter: drop-shadow(0 0 20px rgba(220, 20, 60, 0.8)); /* Crimson */
+        }
+
         .faction-emblem {
-            width: 80px;
-            height: 80px;
+            width: 100px;
+            height: 100px;
             margin: 0 auto 25px;
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
             filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.5));
+            transition: all 0.3s ease;
         }
 
         .faction-name {
