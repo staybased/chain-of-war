@@ -926,6 +926,13 @@
             observer.observe(section);
         });
 
+        // Fallback: ensure all sections are visible after 2 seconds
+        setTimeout(() => {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.add('visible');
+            });
+        }, 2000);
+
         // Enhanced parallax effect for hero background
         window.addEventListener('scroll', () => {
             const scrolled = window.pageYOffset;

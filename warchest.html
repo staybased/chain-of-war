@@ -6,57 +6,11 @@
     <title>Chain of War — War Chest</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
 
-/* SHARED VISUAL STANDARDS */
-/* BASE */
-body { background: #050510 !important; }
-
-/* TYPOGRAPHY */
-h1, h2, h3, .title, .header { font-family: 'Orbitron', system-ui, sans-serif !important; letter-spacing: 3px; }
-
-/* PANELS - glass morphism */
-.panel, .card, section, .container, .sidebar, [class*="panel"], [class*="card"], [class*="section"] {
-    background: rgba(255,255,255,0.03) !important;
-    border: 1px solid rgba(255,255,255,0.08) !important;
-    backdrop-filter: blur(8px);
-    border-radius: 12px !important;
-}
-
-/* STAT COLORS */
-.stat-war, [data-stat="war"] { color: #B87333 !important; }
-.stat-res, [data-stat="res"] { color: #708090 !important; }
-.stat-vel, [data-stat="vel"] { color: #00E5FF !important; }
-.stat-acc, [data-stat="acc"] { color: #FFB300 !important; }
-.stat-dis, [data-stat="dis"] { color: #7B1FA2 !important; }
-.stat-ins, [data-stat="ins"] { color: #00C853 !important; }
-
-/* BUTTONS */
-button, .btn, [class*="btn"], input[type="submit"] {
-    background: linear-gradient(135deg, #00E5FF, #0088FF) !important;
-    color: #000 !important;
-    border: none !important;
-    border-radius: 8px !important;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease !important;
-}
-button:hover, .btn:hover { box-shadow: 0 0 20px rgba(0,229,255,0.4) !important; transform: translateY(-1px); }
-
-/* INTERACTIVE */
-* { transition: color 0.2s, border-color 0.2s, box-shadow 0.2s, opacity 0.2s; }
-
-/* WAR CHEST SPECIFIC ANIMATIONS */
-@keyframes float { 
-    0%,100% { transform: translateY(0); } 
-    50% { transform: translateY(-6px); } 
-}
-
-@keyframes legendary-glow { 
-    0%,100% { box-shadow: 0 0 20px #FFD700; } 
-    50% { box-shadow: 0 0 40px #FFD700, 0 0 60px rgba(255,215,0,0.3); } 
-}
+        /* COW Visual Standards - non-destructive */
+        body { background: #050510; color: #e0e0e0; font-family: system-ui, sans-serif; }
+        h1, h2, h3 { font-family: 'Orbitron', system-ui, sans-serif; letter-spacing: 3px; }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 

@@ -144,9 +144,9 @@
 
                 .cow-nav-link {
                     font-family: system-ui, -apple-system, sans-serif;
-                    font-size: 11px;
+                    font-size: 12px;
                     text-transform: uppercase;
-                    letter-spacing: 2px;
+                    letter-spacing: 1.5px;
                     color: #555;
                     text-decoration: none;
                     transition: color 0.2s ease;
@@ -173,10 +173,10 @@
 
                 .cow-nav-group-label {
                     font-family: system-ui, -apple-system, sans-serif;
-                    font-size: 9px;
+                    font-size: 8px;
                     text-transform: uppercase;
                     letter-spacing: 3px;
-                    color: #333;
+                    color: rgba(255, 255, 255, 0.8);
                     margin-bottom: 12px;
                     font-weight: 600;
                 }
@@ -193,11 +193,13 @@
                 }
 
                 .cow-hamburger {
-                    width: 24px;
-                    height: 18px;
+                    width: 44px;
+                    height: 44px;
                     position: relative;
                     cursor: pointer;
                     display: none;
+                    padding: 13px 10px;
+                    box-sizing: border-box;
                 }
 
                 .cow-hamburger span {
@@ -241,6 +243,8 @@
                     font-size: 12px;
                     color: #FFD700;
                     font-weight: 600;
+                    min-width: 120px;
+                    white-space: nowrap;
                 }
 
                 .cow-connect-button {
@@ -307,7 +311,7 @@
         `).join('');
 
         return `
-            <div class="cow-nav-desktop" style="display: flex; align-items: center; gap: 48px;">
+            <div class="cow-nav-desktop" style="display: flex; align-items: center; gap: 32px;">
                 ${groupsHTML}
             </div>
         `;
@@ -403,7 +407,7 @@
                 top: 0;
                 left: 0;
                 right: 0;
-                height: 56px;
+                height: 64px;
                 background: rgba(5, 5, 16, 0.92);
                 backdrop-filter: blur(16px);
                 -webkit-backdrop-filter: blur(16px);
@@ -417,7 +421,7 @@
                 <!-- Logo -->
                 <div style="display: flex; align-items: center;">
                     <img src="assets/logo.png" alt="Chain of War" style="
-                        height: 36px;
+                        height: 40px;
                         mix-blend-mode: screen;
                     ">
                 </div>
@@ -484,7 +488,7 @@
         document.body.insertAdjacentHTML('afterbegin', createNavigation());
         
         // Add body padding to account for fixed nav
-        document.body.style.paddingTop = '56px';
+        document.body.style.paddingTop = '64px';
         
         // Close mobile menu when clicking outside
         document.addEventListener('click', function(e) {
