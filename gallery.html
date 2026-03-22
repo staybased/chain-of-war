@@ -2554,14 +2554,18 @@
             btn.classList.add('active');
         });
         
-        // Gallery-specific stagger entrance animation
-        const cards = document.querySelectorAll('.unit-card');
-        cards.forEach((card, index) => {
-            setTimeout(() => {
-                card.style.opacity = '1';
-                card.style.transform = 'translateY(0)';
-            }, index * 30);
-        });
+        // Gallery-specific stagger entrance — runs after cards exist
+        function staggerCards() {
+            const cards = document.querySelectorAll('.unit-card');
+            if (cards.length === 0) { setTimeout(staggerCards, 200); return; }
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 30);
+            });
+        }
+        setTimeout(staggerCards, 100);
     </script>
 
     <script src="nav.js"></script>

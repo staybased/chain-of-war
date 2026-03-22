@@ -273,6 +273,7 @@
 
         /* Unit Card - Enhanced */
         .unit-card {
+
             width: 180px;
             height: 270px;
             background: #0f0f1a;
@@ -318,6 +319,7 @@
 
         /* Staggered card entrance animation */
         .unit-card {
+
             animation: cardStagger 0.6s ease forwards;
         }
 
@@ -1027,6 +1029,7 @@
             }
 
             .unit-card {
+
                 width: 150px;
                 height: 225px;
             }
@@ -1196,16 +1199,18 @@
     </style>
     
     <script>
-        // Armory-specific stagger entrance animation on DOMContentLoaded
-        document.addEventListener('DOMContentLoaded', function() {
+        // Armory-specific stagger entrance — runs periodically until cards exist
+        function staggerCards() {
             const cards = document.querySelectorAll('.unit-card');
+            if (cards.length === 0) { setTimeout(staggerCards, 200); return; }
             cards.forEach((card, index) => {
                 setTimeout(() => {
                     card.style.opacity = '1';
                     card.style.transform = 'translateY(0)';
                 }, index * 30);
             });
-        });
+        }
+        document.addEventListener('DOMContentLoaded', function() { setTimeout(staggerCards, 100); });
     </script>
 <link rel="stylesheet" href="design-system.css">
 </head>
