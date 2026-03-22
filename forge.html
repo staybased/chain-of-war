@@ -210,12 +210,12 @@
             margin-top: 0.2rem;
         }
         
-        .stat-war { color: var(--stat-war); }
-        .stat-res { color: var(--stat-res); }
-        .stat-vel { color: var(--stat-vel); }
-        .stat-acc { color: var(--stat-acc); }
-        .stat-dis { color: var(--stat-dis); }
-        .stat-ins { color: var(--stat-ins); }
+        .stat-war { color: #B87333; }
+        .stat-res { color: #708090; }
+        .stat-vel { color: #00E5FF; }
+        .stat-acc { color: #FFB300; }
+        .stat-dis { color: #7B1FA2; }
+        .stat-ins { color: #00C853; }
         
         .unit-cost {
             text-align: center;
@@ -562,10 +562,10 @@
         };
         
         const FORGE_COSTS = {
-            common: 200,
-            uncommon: 500,
-            rare: 1500,
-            epic: 5000
+            common: 200,      // Common → Uncommon
+            uncommon: 500,    // Uncommon → Rare
+            rare: 1500,       // Rare → Epic
+            epic: 5000        // Epic → Legendary
         };
         
         const UNIT_DATABASE = [
@@ -918,10 +918,14 @@
             
             if (uniqueRarities.length > 1) {
                 forgeInfo.innerHTML = `
-                    <div class="forge-cost" style="color: #ff4444;">All units must be the same rarity!</div>
+                    <div class="forge-cost" style="color: #ff4444;">❌ All units must be the same rarity!</div>
                     <div class="forge-result">Selected: ${uniqueRarities.map(r => RARITIES[r].name).join(', ')}</div>
                 `;
                 forgeBtn.disabled = true;
+                // Clear glow effect
+                document.querySelectorAll('.sacrifice-slot.filled').forEach(slot => {
+                    slot.classList.remove('glowing');
+                });
                 return;
             }
             
@@ -931,10 +935,14 @@
             
             if (!nextRarity) {
                 forgeInfo.innerHTML = `
-                    <div class="forge-cost" style="color: #ff4444;">Legendary units cannot be forged higher!</div>
-                    <div class="forge-result"></div>
+                    <div class="forge-cost" style="color: #ff4444;">⚠️ Maximum rarity reached</div>
+                    <div class="forge-result">Legendary units cannot be forged higher!</div>
                 `;
                 forgeBtn.disabled = true;
+                // Clear glow effect
+                document.querySelectorAll('.sacrifice-slot.filled').forEach(slot => {
+                    slot.classList.remove('glowing');
+                });
                 return;
             }
             
@@ -943,7 +951,7 @@
             
             forgeInfo.innerHTML = `
                 <div class="forge-cost" style="color: ${canAfford ? 'var(--cow-gold)' : '#ff4444'};">
-                    Cost: ${cost} $WAR
+                    ${canAfford ? '💰' : '❌'} Cost: ${cost.toLocaleString()} $WAR
                 </div>
                 <div class="forge-result">
                     Creates: 1 ${RARITIES[nextRarity].name} ${FACTIONS[dominantFaction].name} unit
@@ -952,7 +960,7 @@
             
             forgeBtn.disabled = !canAfford;
             
-            // Add glow effect to slots when ready
+            // Add glow effect to slots when ready to forge
             if (canAfford) {
                 document.querySelectorAll('.sacrifice-slot.filled').forEach(slot => {
                     slot.classList.add('glowing');
@@ -985,6 +993,9 @@
             const nextRarity = getNextRarity(currentRarity);
             const dominantFaction = getDominantFaction(gameState.selectedUnits);
             
+            // Store sacrificed units for animation
+            const sacrificedUnits = [...gameState.selectedUnits];
+            
             // Deduct cost
             gameState.warBalance -= cost;
             
@@ -1009,15 +1020,20 @@
                 gameState.forgeStats.highestRarity = nextRarity;
             }
             
-            // Clear selection
+            // Clear selection and sacrifice slots
             gameState.selectedUnits = [];
             gameState.sacrificeSlots = [null, null, null];
+            
+            // Clear the visual slots
+            for (let i = 0; i < 3; i++) {
+                updateSacrificeSlot(i, null);
+            }
             
             // Save data
             saveData();
             
-            // Play forge animation
-            playForgeAnimation(newUnit);
+            // Play forge animation with sacrificed units info
+            playForgeAnimation(newUnit, sacrificedUnits);
         }
         
         function createForgedUnit(sacrificedUnits, newRarity, faction) {
@@ -1035,28 +1051,52 @@
                 template = anyTemplateUnits[Math.floor(Math.random() * anyTemplateUnits.length)];
             }
             
-            // Create new unit with inherited best stats
+            // Create new unit with inherited best stats from each category
             const inheritedStats = {
-                war: Math.max(...sacrificedUnits.map(u => u.stats.war)),
-                res: Math.max(...sacrificedUnits.map(u => u.stats.res)),
-                vel: Math.max(...sacrificedUnits.map(u => u.stats.vel)),
-                acc: Math.max(...sacrificedUnits.map(u => u.stats.acc)),
-                dis: Math.max(...sacrificedUnits.map(u => u.stats.dis)),
-                ins: Math.max(...sacrificedUnits.map(u => u.stats.ins))
+                war: Math.max(...sacrificedUnits.map(u => u.stats.war), template.stats.war),
+                res: Math.max(...sacrificedUnits.map(u => u.stats.res), template.stats.res),
+                vel: Math.max(...sacrificedUnits.map(u => u.stats.vel), template.stats.vel),
+                acc: Math.max(...sacrificedUnits.map(u => u.stats.acc), template.stats.acc),
+                dis: Math.max(...sacrificedUnits.map(u => u.stats.dis), template.stats.dis),
+                ins: Math.max(...sacrificedUnits.map(u => u.stats.ins), template.stats.ins)
             };
+            
+            // Calculate new points based on inherited stats
+            const totalStats = Object.values(inheritedStats).reduce((sum, stat) => sum + stat, 0);
+            const newPoints = Math.min(template.points + Math.floor((totalStats - Object.values(template.stats).reduce((sum, stat) => sum + stat, 0)) * 2), RARITIES[newRarity].pointRange[1]);
             
             return {
                 ...template,
                 instanceId: Date.now() + Math.random(),
+                points: newPoints,
                 stats: inheritedStats,
                 isForged: true,
-                originalStats: template.stats,
-                inheritedFrom: sacrificedUnits.map(u => u.name)
+                originalStats: { ...template.stats },
+                inheritedFrom: sacrificedUnits.map(u => u.name),
+                forgedAt: new Date().toISOString()
             };
         }
         
-        function playForgeAnimation(newUnit) {
+        function playForgeAnimation(newUnit, sacrificedUnits) {
+            // Disable forge button during animation
+            document.getElementById('forge-btn').disabled = true;
+            
             playSound('rumble');
+            
+            // Animate sacrifice slots sliding to center and glowing intensely
+            const slots = document.querySelectorAll('.sacrifice-slot.filled');
+            slots.forEach((slot, index) => {
+                slot.style.transition = 'all 1s ease-in-out';
+                slot.style.transform = 'scale(1.2) translateX(0)';
+                slot.style.filter = 'brightness(2) saturate(2)';
+                slot.classList.add('glowing');
+                
+                // Add slide animation
+                setTimeout(() => {
+                    slot.style.transform = 'scale(0.8) translateY(-20px)';
+                    slot.style.opacity = '0.5';
+                }, 500 + index * 100);
+            });
             
             // Create energy particle effect
             const animation = document.createElement('div');
@@ -1064,56 +1104,112 @@
             animation.innerHTML = '<div class="energy-particles"></div>';
             document.body.appendChild(animation);
             
+            // Flash effect
+            setTimeout(() => {
+                const flash = document.createElement('div');
+                flash.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: radial-gradient(circle, rgba(255, 165, 0, 0.8) 0%, transparent 70%);
+                    z-index: 9999;
+                    animation: flash 0.5s ease-out forwards;
+                `;
+                flash.innerHTML = `
+                    <style>
+                        @keyframes flash {
+                            0% { opacity: 0; }
+                            50% { opacity: 1; }
+                            100% { opacity: 0; }
+                        }
+                    </style>
+                `;
+                document.body.appendChild(flash);
+                
+                setTimeout(() => flash.remove(), 500);
+            }, 1500);
+            
             setTimeout(() => {
                 animation.remove();
+                // Reset slots
+                slots.forEach(slot => {
+                    slot.style.transform = '';
+                    slot.style.filter = '';
+                    slot.style.opacity = '';
+                    slot.style.transition = '';
+                });
+                
                 playSound('reveal');
-                showForgeResult(newUnit);
-            }, 2000);
+                showForgeResult(newUnit, sacrificedUnits);
+                
+                // Re-enable forge button and update display
+                document.getElementById('forge-btn').disabled = false;
+                updateDisplay();
+            }, 2500);
         }
         
-        function showForgeResult(unit) {
+        function showForgeResult(unit, sacrificedUnits) {
             const resultCard = document.createElement('div');
             resultCard.className = 'result-card';
             
             const faction = FACTIONS[unit.faction];
             const rarity = getRarity(unit.points);
             
-            let inheritedStatsHtml = '';
-            if (unit.isForged) {
-                Object.entries(unit.stats).forEach(([stat, value]) => {
-                    const isInherited = value > unit.originalStats[stat];
-                    if (isInherited) {
-                        inheritedStatsHtml += `
-                            <div class="stat-item">
-                                <span class="stat-label">${stat.toUpperCase()}</span>
-                                <div class="stat-value stat-${stat} ${isInherited ? 'inherited-stat' : ''}">${value}</div>
-                            </div>
-                        `;
-                    }
-                });
-            }
+            // Create complete stats display with inheritance info
+            let allStatsHtml = '';
+            Object.entries(unit.stats).forEach(([stat, value]) => {
+                const originalValue = unit.originalStats[stat];
+                const isInherited = value > originalValue;
+                const statColor = {
+                    war: '#B87333',
+                    res: '#708090', 
+                    vel: '#00E5FF',
+                    acc: '#FFB300',
+                    dis: '#7B1FA2',
+                    ins: '#00C853'
+                }[stat];
+                
+                allStatsHtml += `
+                    <div class="stat-item">
+                        <span class="stat-label">${stat.toUpperCase()}</span>
+                        <div class="stat-value ${isInherited ? 'inherited-stat' : ''}" style="color: ${statColor};">
+                            ${value}${isInherited ? ' ⬆' : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            // Show which units were sacrificed
+            const sacrificeInfo = sacrificedUnits.map(unit => unit.name).join(', ');
             
             resultCard.innerHTML = `
-                <div class="forged-banner">FORGED!</div>
+                <div class="forged-banner">⚡ FORGED! ⚡</div>
                 <div class="unit-header">
                     <img class="faction-emblem" src="${faction.emblem}" alt="${faction.name}">
                     <div class="unit-info">
                         <h3>${unit.name}</h3>
-                        <div class="unit-role">${unit.role} • ${RARITIES[rarity].name}</div>
+                        <div class="unit-role" style="color: ${RARITIES[rarity].color};">${unit.role} • ${RARITIES[rarity].name}</div>
                     </div>
                 </div>
-                ${inheritedStatsHtml ? `
-                    <div style="margin: 1rem 0;">
-                        <h4 style="color: var(--cow-gold); text-align: center; margin-bottom: 0.5rem;">Inherited Stats</h4>
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
-                            ${inheritedStatsHtml}
-                        </div>
+                
+                <div style="margin: 1rem 0;">
+                    <h4 style="color: var(--cow-gold); text-align: center; margin-bottom: 0.5rem; font-size: 0.9rem;">All Stats</h4>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 1rem;">
+                        ${allStatsHtml}
                     </div>
-                ` : ''}
+                </div>
+                
+                <div style="background: rgba(0,0,0,0.3); padding: 0.8rem; border-radius: 8px; margin: 1rem 0; font-size: 0.8rem;">
+                    <div style="color: #888; text-align: center; margin-bottom: 0.5rem;">Forged from:</div>
+                    <div style="color: #ccc; text-align: center; line-height: 1.2;">${sacrificeInfo}</div>
+                </div>
+                
                 <div style="text-align: center; margin-top: 1rem;">
-                    <button onclick="this.parentElement.parentElement.remove(); updateDisplay();" 
-                            style="background: var(--cow-gold); color: black; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; font-weight: bold;">
-                        FORGE AGAIN
+                    <button onclick="this.parentElement.parentElement.remove();" 
+                            style="background: var(--cow-gold); color: black; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">
+                        Continue Forging
                     </button>
                 </div>
             `;
@@ -1129,7 +1225,7 @@
         }
         
         function updateBalance() {
-            document.getElementById('war-balance').textContent = gameState.warBalance;
+            document.getElementById('war-balance').textContent = gameState.warBalance.toLocaleString();
         }
         
         function createParticles() {
