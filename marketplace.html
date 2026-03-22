@@ -118,7 +118,7 @@
         }
 
         .filters-sidebar {
-            width: 280px;
+            width: 240px;
             background: var(--cow-bg-card);
             border-radius: 8px;
             padding: 20px;
@@ -189,16 +189,22 @@
         .listings-grid {
             flex: 1;
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 20px;
+            padding: 20px;
         }
 
         .listing-card {
-            background: var(--cow-bg-card);
+            background: #0f0f1a;
+            border: 1px solid rgba(255,255,255,0.08);
             border-radius: 12px;
+            padding: 16px;
+            min-height: 280px;
             overflow: hidden;
             transition: transform 0.2s, box-shadow 0.2s;
             cursor: pointer;
+            display: flex;
+            flex-direction: column;
         }
 
         .listing-card:hover {
@@ -208,7 +214,7 @@
 
         .unit-card-preview {
             position: relative;
-            height: 200px;
+            height: 120px;
             background: linear-gradient(135deg, var(--faction-iron-primary), var(--faction-iron-accent));
             display: flex;
             align-items: center;
@@ -216,6 +222,8 @@
             color: #ffffff;
             font-weight: bold;
             font-size: 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
         }
 
         .rarity-border {
@@ -246,6 +254,8 @@
 
         .unit-name {
             font-weight: bold;
+            color: #ffffff;
+            font-size: 16px;
             margin-bottom: 4px;
         }
 
@@ -256,7 +266,9 @@
         }
 
         .listing-details {
-            padding: 16px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
 
         .seller-info {
@@ -265,7 +277,7 @@
             align-items: center;
             margin-bottom: 12px;
             font-size: 12px;
-            color: #cccccc;
+            color: #888888;
         }
 
         .price-info {
@@ -275,7 +287,8 @@
         .war-price {
             font-size: 24px;
             font-weight: bold;
-            color: var(--cow-gold);
+            color: #FFB300;
+            font-family: monospace;
         }
 
         .eth-price {
@@ -285,7 +298,7 @@
 
         .buy-button {
             width: 100%;
-            background: var(--cow-cyan);
+            background: linear-gradient(45deg, #00E5FF, #00B0CC);
             color: #000000;
             border: none;
             padding: 12px;
@@ -294,10 +307,11 @@
             font-size: 14px;
             cursor: pointer;
             transition: background 0.2s;
+            margin-top: auto;
         }
 
         .buy-button:hover {
-            background: #00D4EA;
+            background: linear-gradient(45deg, #00D4EA, #009FB8);
         }
 
         .battle-badge {
@@ -396,8 +410,9 @@
 
         .my-listings-grid.active {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 20px;
+            padding: 20px;
         }
 
         .list-unit-button {
@@ -447,6 +462,31 @@
             margin-top: 4px;
             flex-wrap: wrap;
         }
+
+        /* Individual stat colors */
+        .stat-war { color: #B87333; }
+        .stat-res { color: #708090; }
+        .stat-vel { color: #00E5FF; }
+        .stat-acc { color: #FFB300; }
+        .stat-dis { color: #7B1FA2; }
+        .stat-ins { color: #00C853; }
+
+        .faction-text {
+            font-size: 12px;
+            text-transform: uppercase;
+            opacity: 0.8;
+        }
+
+        .role-badge {
+            background: rgba(0, 229, 255, 0.2);
+            color: #00E5FF;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            display: inline-block;
+        }
     </style>
 </head>
 <body>
@@ -463,8 +503,8 @@
                 </div>
             </div>
             <div class="marketplace-tabs">
+                <button class="tab-button active" data-tab="browse-all">BROWSE</button>
                 <button class="tab-button" data-tab="my-listings">MY LISTINGS</button>
-                <button class="tab-button active" data-tab="browse-all">BROWSE ALL</button>
                 <button class="tab-button" data-tab="activity">ACTIVITY</button>
             </div>
         </header>
@@ -803,30 +843,52 @@
                 badges += `<span class="blooded-badge">BLOODED</span>`;
             }
 
+            const factionColors = {
+                iron: '#B87333',
+                swarm: '#9C27B0',
+                void: '#FFB300',
+                emerald: '#00BFA5',
+                celestial: '#3F51B5'
+            };
+
             return `
                 <div class="listing-card" onclick="showUnitDetail('${unit.id}')">
                     <div class="unit-card-preview" style="background: ${gradient}">
                         <div class="rarity-border rarity-${unit.rarity}"></div>
-                        <div class="unit-info">
-                            <div class="unit-name">${unit.name}</div>
-                            <div class="unit-stats">
-                                <span>WAR:${unit.stats.war}</span>
-                                <span>RES:${unit.stats.res}</span>
-                                <span>VEL:${unit.stats.vel}</span>
-                                <span>Total:${statsTotal}</span>
-                            </div>
-                            ${badges ? `<div class="badges-container">${badges}</div>` : ''}
+                        <div class="unit-name" style="position: absolute; top: 8px; left: 8px; right: 8px; text-align: center; background: rgba(0,0,0,0.8); padding: 4px 8px; border-radius: 4px;">
+                            ${unit.name}
                         </div>
                     </div>
                     <div class="listing-details">
-                        <div class="seller-info">
+                        <div style="margin-bottom: 8px;">
+                            <div class="faction-text" style="color: ${factionColors[unit.faction]}; font-weight: bold;">
+                                ${unit.faction.toUpperCase()}
+                            </div>
+                            <span class="role-badge">${unit.role}</span>
+                        </div>
+                        
+                        <div style="background: rgba(0,0,0,0.3); padding: 8px; border-radius: 6px; margin-bottom: 12px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; font-size: 11px;">
+                                <span class="stat-war">WAR: ${unit.stats.war}</span>
+                                <span class="stat-res">RES: ${unit.stats.res}</span>
+                                <span class="stat-vel">VEL: ${unit.stats.vel}</span>
+                                <span class="stat-acc">ACC: ${unit.stats.acc}</span>
+                                <span class="stat-dis">DIS: ${unit.stats.dis}</span>
+                                <span class="stat-ins">INS: ${unit.stats.ins}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="price-info" style="margin-bottom: 12px;">
+                            <div class="war-price">${unit.price} $WAR</div>
+                        </div>
+                        
+                        <div class="seller-info" style="margin-bottom: 12px;">
                             <span>Seller: ${unit.seller}</span>
                             <span>${unit.timeAgo}</span>
                         </div>
-                        <div class="price-info">
-                            <div class="war-price">${unit.price} $WAR</div>
-                            <div class="eth-price">${unit.ethPrice} ETH</div>
-                        </div>
+                        
+                        ${badges ? `<div class="badges-container" style="margin-bottom: 12px;">${badges}</div>` : ''}
+                        
                         <button class="buy-button" onclick="event.stopPropagation(); buyUnit('${unit.id}')">
                             BUY NOW
                         </button>
@@ -848,6 +910,7 @@
 
         function renderMyListings() {
             const grid = document.getElementById('my-listings-grid');
+            grid.classList.add('active');
             grid.innerHTML = userListings.map(renderListingCard).join('');
         }
 
@@ -876,10 +939,15 @@
             document.getElementById('my-listings-content').classList.toggle('hidden', tabName !== 'my-listings');
             document.getElementById('activity-content').classList.toggle('hidden', tabName !== 'activity');
 
-            // Load content based on tab
+            // Remove active class from my-listings-grid when not viewing my listings
+            const myListingsGrid = document.getElementById('my-listings-grid');
             if (tabName === 'my-listings') {
                 renderMyListings();
-            } else if (tabName === 'activity') {
+            } else {
+                myListingsGrid.classList.remove('active');
+            }
+
+            if (tabName === 'activity') {
                 renderActivity();
             }
         }
