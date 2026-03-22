@@ -305,6 +305,12 @@
             border-color: var(--faction-accent);
         }
 
+        .faction-option.selected {
+            border: 2px solid #00E5FF;
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.6);
+            transform: translateY(-5px) scale(1.05);
+        }
+
         .faction-option h3 {
             font-family: 'Orbitron', system-ui, sans-serif;
             font-size: 18px;
@@ -970,9 +976,23 @@
                 factionDiv.style.setProperty('--faction-primary', faction.color);
                 factionDiv.style.setProperty('--faction-accent', faction.accent);
                 
+                // Fix emblem paths to use correct assets
+                const emblemPaths = {
+                    iron: 'assets/emblem-iron-covenant.png',
+                    swarm: 'assets/emblem-swarm-of-xeth.png',
+                    void: 'assets/emblem-void-pharaohs.png',
+                    emerald: 'assets/emblem-emerald-tide.png',
+                    celestial: 'assets/emblem-celestial-order.png',
+                    warp: 'assets/emblem-warp-touched.png',
+                    shadow: 'assets/emblem-shadow-kin.png',
+                    steel: 'assets/emblem-steel-legion.png',
+                    bone: 'assets/emblem-bone-prophets.png',
+                    apex: 'assets/emblem-apex-hunters.png'
+                };
+                
                 const emblemDiv = document.createElement('div');
                 emblemDiv.className = 'faction-emblem';
-                emblemDiv.style.backgroundImage = `url(${faction.emblem})`;
+                emblemDiv.style.backgroundImage = `url(${emblemPaths[key] || faction.emblem})`;
                 emblemDiv.style.backgroundColor = faction.accent;
                 
                 factionDiv.innerHTML = `
@@ -985,7 +1005,16 @@
                 `;
                 
                 factionDiv.prepend(emblemDiv);
-                factionDiv.addEventListener('click', () => selectFaction(key));
+                factionDiv.addEventListener('click', () => {
+                    // Highlight selected faction
+                    document.querySelectorAll('.faction-option').forEach(f => f.classList.remove('selected'));
+                    factionDiv.classList.add('selected');
+                    
+                    // Small delay for visual feedback
+                    setTimeout(() => {
+                        selectFaction(key);
+                    }, 200);
+                });
                 factionGrid.appendChild(factionDiv);
             });
             
@@ -998,110 +1027,316 @@
             
             addToBattleLog(`Player ${currentPlayer} selected ${FACTIONS[factionKey].name}`, "info");
             
+            // Show army building interface
+            showArmyBuilder(currentPlayer, factionKey);
+        }
+
+        function showArmyBuilder(player, factionKey) {
+            const faction = FACTIONS[factionKey];
+            const armySelection = document.getElementById('armySelection');
+            
+            // Create army building interface
+            armySelection.innerHTML = `
+                <div class="faction-selection-header">
+                    <div class="player-select" style="color: ${faction.accent};">
+                        Player ${player} - Build Your ${faction.name} Army
+                    </div>
+                    <div style="color: #888; font-size: 14px; margin-bottom: 20px;">
+                        Select units to build your army (1000 points maximum)
+                    </div>
+                    <div id="pointsTracker" style="font-family: 'JetBrains Mono', monospace; font-size: 18px; color: #FFD700; margin-bottom: 20px;">
+                        <span id="currentPoints">0</span> / 1000 pts
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 30px; max-width: 1400px;">
+                    <!-- Unit Roster -->
+                    <div style="flex: 2; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 20px;">
+                        <h3 style="color: ${faction.accent}; margin-bottom: 15px; font-family: 'Orbitron', sans-serif;">Unit Roster</h3>
+                        <div id="unitRoster" style="max-height: 500px; overflow-y: auto;">
+                            <!-- Units will be populated here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Your Army -->
+                    <div style="flex: 1; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 20px;">
+                        <h3 style="color: #FFD700; margin-bottom: 15px; font-family: 'Orbitron', sans-serif;">Your Army</h3>
+                        <div id="playerArmy" style="min-height: 300px; margin-bottom: 20px;">
+                            <div style="color: #888; font-style: italic; text-align: center; padding: 40px 0;">
+                                No units selected
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button id="startBattleBtn" class="btn primary" disabled>Start Battle</button>
+                            <button id="clearArmyBtn" class="btn danger">Clear Army</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            populateUnitRoster(factionKey, player);
+            
+            // Add event listeners
+            document.getElementById('startBattleBtn').addEventListener('click', () => {
+                if (gameState.armies[player] && gameState.armies[player].length > 0) {
+                    startBattlePhase();
+                }
+            });
+            
+            document.getElementById('clearArmyBtn').addEventListener('click', () => {
+                clearPlayerArmy(player);
+            });
+        }
+
+        function populateUnitRoster(factionKey, player) {
+            const faction = FACTIONS[factionKey];
+            const unitRoster = document.getElementById('unitRoster');
+            
+            // Group units by role
+            const roles = ['HQ', 'Troops', 'Elites', 'Fast Attack', 'Heavy Support'];
+            
+            unitRoster.innerHTML = roles.map(role => {
+                const roleUnits = faction.units.filter(u => u.role === role);
+                
+                return `
+                    <div style="margin-bottom: 25px;">
+                        <h4 style="color: ${faction.accent}; font-size: 14px; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid #444; font-family: 'Orbitron', sans-serif; letter-spacing: 2px;">
+                            ${role}
+                        </h4>
+                        ${roleUnits.map(unit => `
+                            <div class="unit-card" data-unit-name="${unit.name}" data-player="${player}" style="
+                                background: rgba(0,0,0,0.4); 
+                                border: 1px solid #555; 
+                                border-radius: 8px; 
+                                padding: 12px; 
+                                margin-bottom: 8px; 
+                                cursor: pointer; 
+                                transition: all 0.2s ease;
+                            ">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <span style="font-size: 20px;">${unit.icon}</span>
+                                        <div>
+                                            <div style="font-weight: bold; color: #fff;">${unit.name}</div>
+                                            <div style="font-size: 11px; color: #888;">${unit.role}</div>
+                                        </div>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <div style="font-family: 'JetBrains Mono', monospace; font-weight: bold; color: #FFD700;">${unit.cost} pts</div>
+                                        <div style="font-size: 10px; color: #888;">Click to add</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Stats -->
+                                <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-top: 10px;">
+                                    <div style="text-align: center; padding: 4px; background: rgba(184, 115, 51, 0.2); border-radius: 3px;">
+                                        <div style="font-size: 12px; font-weight: bold; color: #B87333;">${unit.war}</div>
+                                        <div style="font-size: 8px; color: #B87333;">WAR</div>
+                                    </div>
+                                    <div style="text-align: center; padding: 4px; background: rgba(112, 128, 144, 0.2); border-radius: 3px;">
+                                        <div style="font-size: 12px; font-weight: bold; color: #708090;">${unit.res}</div>
+                                        <div style="font-size: 8px; color: #708090;">RES</div>
+                                    </div>
+                                    <div style="text-align: center; padding: 4px; background: rgba(0, 229, 255, 0.2); border-radius: 3px;">
+                                        <div style="font-size: 12px; font-weight: bold; color: #00E5FF;">${unit.vel}</div>
+                                        <div style="font-size: 8px; color: #00E5FF;">VEL</div>
+                                    </div>
+                                    <div style="text-align: center; padding: 4px; background: rgba(255, 179, 0, 0.2); border-radius: 3px;">
+                                        <div style="font-size: 12px; font-weight: bold; color: #FFB300;">${unit.acc}</div>
+                                        <div style="font-size: 8px; color: #FFB300;">ACC</div>
+                                    </div>
+                                    <div style="text-align: center; padding: 4px; background: rgba(123, 31, 162, 0.2); border-radius: 3px;">
+                                        <div style="font-size: 12px; font-weight: bold; color: #7B1FA2;">${unit.dis}</div>
+                                        <div style="font-size: 8px; color: #7B1FA2;">DIS</div>
+                                    </div>
+                                    <div style="text-align: center; padding: 4px; background: rgba(0, 200, 83, 0.2); border-radius: 3px;">
+                                        <div style="font-size: 12px; font-weight: bold; color: #00C853;">${unit.ins}</div>
+                                        <div style="font-size: 8px; color: #00C853;">INS</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Abilities -->
+                                <div style="margin-top: 8px; font-size: 10px; color: #CCC;">
+                                    <strong style="color: #FFD700;">Abilities:</strong> ${unit.abilities.join(', ')}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }).join('');
+            
+            // Add click handlers to unit cards
+            document.querySelectorAll('.unit-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const unitName = this.dataset.unitName;
+                    const player = parseInt(this.dataset.player);
+                    addUnitToArmy(unitName, factionKey, player);
+                });
+                
+                card.addEventListener('mouseenter', function() {
+                    this.style.borderColor = faction.accent;
+                    this.style.background = `rgba(${hexToRgb(faction.accent).r}, ${hexToRgb(faction.accent).g}, ${hexToRgb(faction.accent).b}, 0.1)`;
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.borderColor = '#555';
+                    this.style.background = 'rgba(0,0,0,0.4)';
+                });
+            });
+        }
+
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : { r: 255, g: 255, b: 255 };
+        }
+
+        function addUnitToArmy(unitName, factionKey, player) {
+            const faction = FACTIONS[factionKey];
+            const unit = faction.units.find(u => u.name === unitName);
+            
+            if (!unit) return;
+            
+            // Initialize army if needed
+            if (!gameState.armies[player]) {
+                gameState.armies[player] = [];
+            }
+            
+            // Check point limit
+            const currentPoints = gameState.armies[player].reduce((sum, u) => sum + u.cost, 0);
+            if (currentPoints + unit.cost > 1000) {
+                addToBattleLog("Not enough points to add this unit!", "info");
+                return;
+            }
+            
+            // Create unit instance
+            const unitInstance = {
+                ...unit,
+                id: `p${player}-${unit.role.toLowerCase().replace(' ', '')}-${gameState.armies[player].length}`,
+                maxHp: unit.res * 3,
+                currentHp: unit.res * 3,
+                faction: factionKey,
+                player: player,
+                position: null,
+                activated: false
+            };
+            
+            gameState.armies[player].push(unitInstance);
+            
+            updatePlayerArmyDisplay(player, factionKey);
+            updatePointsTracker(player);
+            
+            addToBattleLog(`${unit.name} added to Player ${player} army`, "info");
+        }
+
+        function updatePlayerArmyDisplay(player, factionKey) {
+            const playerArmy = document.getElementById('playerArmy');
+            const army = gameState.armies[player] || [];
+            const faction = FACTIONS[factionKey];
+            
+            if (army.length === 0) {
+                playerArmy.innerHTML = `
+                    <div style="color: #888; font-style: italic; text-align: center; padding: 40px 0;">
+                        No units selected
+                    </div>
+                `;
+                return;
+            }
+            
+            playerArmy.innerHTML = army.map((unit, index) => `
+                <div style="
+                    background: rgba(0,0,0,0.4); 
+                    border: 1px solid #555; 
+                    border-radius: 6px; 
+                    padding: 10px; 
+                    margin-bottom: 8px;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                ">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 16px;">${unit.icon}</span>
+                        <div>
+                            <div style="font-size: 12px; font-weight: bold; color: #fff;">${unit.name}</div>
+                            <div style="font-size: 10px; color: #888;">${unit.role} • ${unit.cost} pts</div>
+                        </div>
+                    </div>
+                    <button onclick="removeUnitFromArmy(${index}, ${player}, '${factionKey}')" style="
+                        background: #ff4444; 
+                        border: none; 
+                        color: white; 
+                        padding: 4px 8px; 
+                        border-radius: 4px; 
+                        cursor: pointer; 
+                        font-size: 10px;
+                    ">Remove</button>
+                </div>
+            `).join('');
+        }
+
+        function removeUnitFromArmy(index, player, factionKey) {
+            if (gameState.armies[player] && gameState.armies[player][index]) {
+                const removedUnit = gameState.armies[player].splice(index, 1)[0];
+                addToBattleLog(`${removedUnit.name} removed from Player ${player} army`, "info");
+                
+                updatePlayerArmyDisplay(player, factionKey);
+                updatePointsTracker(player);
+            }
+        }
+
+        function clearPlayerArmy(player) {
+            if (confirm('Clear entire army?')) {
+                gameState.armies[player] = [];
+                const factionKey = gameState.factionChoices[player];
+                updatePlayerArmyDisplay(player, factionKey);
+                updatePointsTracker(player);
+                addToBattleLog(`Player ${player} army cleared`, "info");
+            }
+        }
+
+        function updatePointsTracker(player) {
+            const army = gameState.armies[player] || [];
+            const totalPoints = army.reduce((sum, unit) => sum + unit.cost, 0);
+            
+            const pointsElement = document.getElementById('currentPoints');
+            if (pointsElement) {
+                pointsElement.textContent = totalPoints;
+                pointsElement.style.color = totalPoints > 1000 ? '#FF4444' : '#FFD700';
+            }
+            
+            // Enable/disable start battle button
+            const startBattleBtn = document.getElementById('startBattleBtn');
+            if (startBattleBtn) {
+                const hasUnits = army.length > 0;
+                const withinBudget = totalPoints <= 1000;
+                startBattleBtn.disabled = !hasUnits || !withinBudget;
+                startBattleBtn.style.opacity = (hasUnits && withinBudget) ? '1' : '0.5';
+            }
+        }
+
+        function startBattlePhase() {
+            const currentPlayer = gameState.factionChoices[2] ? 2 : 1;
+            
             if (currentPlayer === 1) {
-                document.getElementById('playerSelect').textContent = 'Player 2 - Choose your faction:';
-                document.getElementById('playerSelect').style.color = '#FF6B6B';
+                // Player 1 done, now Player 2's turn
+                showArmySelection(); // Show faction selection for player 2
             } else {
-                // Both players selected, generate armies
-                generateArmies();
+                // Both players done, start deployment
                 document.getElementById('armySelection').classList.add('hidden');
                 gameState.phase = 'deployment';
+                gameState.activePlayer = 1;
                 updateUI();
-                addToBattleLog("Army generation complete. Begin deployment phase.", "info");
+                addToBattleLog("Army building complete. Begin deployment phase.", "info");
             }
         }
 
         function generateArmies() {
-            [1, 2].forEach(player => {
-                const factionKey = gameState.factionChoices[player];
-                const faction = FACTIONS[factionKey];
-                const army = [];
-                let pointsUsed = 0;
-                
-                // Add HQ (mandatory)
-                const hq = {...faction.units.find(u => u.role === 'HQ')};
-                hq.id = `p${player}-hq`;
-                hq.maxHp = hq.res * 3;
-                hq.currentHp = hq.maxHp;
-                hq.faction = factionKey;
-                hq.player = player;
-                hq.position = null;
-                hq.activated = false;
-                army.push(hq);
-                pointsUsed += hq.cost;
-                
-                // Add 2-3 Troops (mandatory)
-                const troops = faction.units.filter(u => u.role === 'Troops');
-                for (let i = 0; i < Math.min(3, troops.length) && pointsUsed < 950; i++) {
-                    const unit = {...troops[i % troops.length]};
-                    unit.id = `p${player}-troops-${i}`;
-                    unit.maxHp = unit.res * 3;
-                    unit.currentHp = unit.maxHp;
-                    unit.faction = factionKey;
-                    unit.player = player;
-                    unit.position = null;
-                    unit.activated = false;
-                    if (pointsUsed + unit.cost <= 1000) {
-                        army.push(unit);
-                        pointsUsed += unit.cost;
-                    }
-                }
-                
-                // Add 1 Elite
-                const elites = faction.units.filter(u => u.role === 'Elites');
-                if (elites.length > 0 && pointsUsed < 900) {
-                    const unit = {...elites[0]};
-                    unit.id = `p${player}-elite-0`;
-                    unit.maxHp = unit.res * 3;
-                    unit.currentHp = unit.maxHp;
-                    unit.faction = factionKey;
-                    unit.player = player;
-                    unit.position = null;
-                    unit.activated = false;
-                    if (pointsUsed + unit.cost <= 1000) {
-                        army.push(unit);
-                        pointsUsed += unit.cost;
-                    }
-                }
-                
-                // Add 1 Fast Attack
-                const fastAttack = faction.units.filter(u => u.role === 'Fast Attack');
-                if (fastAttack.length > 0 && pointsUsed < 850) {
-                    const unit = {...fastAttack[0]};
-                    unit.id = `p${player}-fast-0`;
-                    unit.maxHp = unit.res * 3;
-                    unit.currentHp = unit.maxHp;
-                    unit.faction = factionKey;
-                    unit.player = player;
-                    unit.position = null;
-                    unit.activated = false;
-                    if (pointsUsed + unit.cost <= 1000) {
-                        army.push(unit);
-                        pointsUsed += unit.cost;
-                    }
-                }
-                
-                // Add 1 Heavy Support
-                const heavySupport = faction.units.filter(u => u.role === 'Heavy Support');
-                if (heavySupport.length > 0 && pointsUsed < 650) {
-                    const unit = {...heavySupport[0]};
-                    unit.id = `p${player}-heavy-0`;
-                    unit.maxHp = unit.res * 3;
-                    unit.currentHp = unit.maxHp;
-                    unit.faction = factionKey;
-                    unit.player = player;
-                    unit.position = null;
-                    unit.activated = false;
-                    if (pointsUsed + unit.cost <= 1000) {
-                        army.push(unit);
-                        pointsUsed += unit.cost;
-                    }
-                }
-                
-                gameState.armies[player] = army;
-                
-                console.log(`Player ${player} army (${pointsUsed}pts):`, army.map(u => `${u.name} (${u.cost})`));
-            });
+            // This function is now deprecated - armies are built by the player through the UI
+            // But we keep it for backwards compatibility if needed
+            console.log("Army generation complete - armies built via UI");
         }
 
         function showPhaseFlash(text) {
@@ -1711,6 +1946,9 @@
                 location.reload();
             }
         });
+
+        // Global functions (called from onclick handlers)
+        window.removeUnitFromArmy = removeUnitFromArmy;
 
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', initGame);
