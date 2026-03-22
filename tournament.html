@@ -160,7 +160,7 @@
         .join-btn {
             width: 100%;
             padding: 15px;
-            background: linear-gradient(135deg, var(--cow-gold), #FFB300);
+            background: linear-gradient(135deg, #00E5FF, #0088FF);
             color: #000;
             border: none;
             border-radius: 10px;
@@ -172,7 +172,7 @@
 
         .join-btn:hover {
             transform: scale(1.05);
-            box-shadow: 0 5px 20px var(--cow-gold-glow);
+            box-shadow: 0 5px 20px rgba(0, 229, 255, 0.5);
         }
 
         .join-btn:disabled {
@@ -253,9 +253,10 @@
         }
 
         .bracket-player.you {
-            background: var(--cow-cyan-dim);
-            color: var(--cow-cyan);
+            background: rgba(0, 229, 255, 0.2);
+            color: #00E5FF;
             font-weight: bold;
+            border: 1px solid #00E5FF;
         }
 
         .match-arena {
@@ -538,7 +539,7 @@
                 <!-- Prize information will appear here -->
             </div>
 
-            <button class="fight-btn" onclick="showLobby()">ENTER ANOTHER TOURNAMENT</button>
+            <button class="join-btn" onclick="showLobby()" style="margin: 20px auto; display: block; max-width: 300px;">ENTER ANOTHER TOURNAMENT</button>
         </div>
     </div>
 
@@ -811,8 +812,23 @@
             gameState.bracket = createTournamentBracket(playerNames);
             gameState.currentMatch = null;
             
+            // Simulate all AI vs AI matches in first round
+            simulateAIMatches();
+            
             // Find player's first match
             findNextMatch();
+        }
+
+        function simulateAIMatches() {
+            gameState.bracket.rounds.forEach(round => {
+                round.matches.forEach(match => {
+                    if (!match.completed && match.player1 !== 'You' && match.player2 !== 'You' && match.player2 !== 'BYE') {
+                        const winner = Math.random() > 0.5 ? match.player1 : match.player2;
+                        match.winner = winner;
+                        match.completed = true;
+                    }
+                });
+            });
         }
 
         function generatePlayerNames(count) {
@@ -833,7 +849,8 @@
         function createTournamentBracket(players) {
             const bracket = {
                 rounds: [],
-                currentRound: 0
+                currentRound: 0,
+                allPlayers: [...players]
             };
 
             let currentPlayers = [...players];
@@ -841,7 +858,6 @@
 
             while (currentPlayers.length > 1) {
                 const matches = [];
-                const nextRoundPlayers = [];
 
                 for (let i = 0; i < currentPlayers.length; i += 2) {
                     const match = {
@@ -849,17 +865,17 @@
                         player1: currentPlayers[i],
                         player2: currentPlayers[i + 1] || 'BYE',
                         winner: null,
-                        completed: false
+                        completed: false,
+                        roundNumber: roundNum
                     };
 
                     // Auto-advance bye matches
                     if (match.player2 === 'BYE') {
                         match.winner = match.player1;
                         match.completed = true;
-                        nextRoundPlayers.push(match.player1);
-                    } else {
-                        matches.push(match);
                     }
+
+                    matches.push(match);
                 }
 
                 bracket.rounds.push({
@@ -868,18 +884,15 @@
                     name: getRoundName(roundNum, currentPlayers.length)
                 });
 
-                // Simulate non-player matches
+                // Calculate next round participants
+                const nextRoundPlayers = [];
                 matches.forEach(match => {
-                    if (match.player1 !== 'You' && match.player2 !== 'You' && !match.completed) {
-                        // Auto-simulate AI vs AI matches
-                        const winner = Math.random() > 0.5 ? match.player1 : match.player2;
-                        match.winner = winner;
-                        match.completed = true;
-                        nextRoundPlayers.push(winner);
+                    if (match.completed) {
+                        nextRoundPlayers.push(match.winner);
                     }
                 });
 
-                currentPlayers = nextRoundPlayers;
+                currentPlayers = nextRoundPlayers.length > 0 ? nextRoundPlayers : currentPlayers.filter((_, idx) => idx % 2 === 0);
                 roundNum++;
             }
 
@@ -1168,8 +1181,8 @@
                 }
             });
 
-            // Advance winners to next round
-            advanceBracket();
+            // Build next round if needed
+            buildNextRound();
             
             // Find next player match
             findNextMatch();
@@ -1181,48 +1194,100 @@
             }
         }
 
-        function advanceBracket() {
-            // This function would handle advancing winners to the next round
-            // For simplicity, we'll let the bracket generation handle this
-            return;
+        function buildNextRound() {
+            const currentRoundNum = gameState.currentMatch.round.roundNumber;
+            const currentRound = gameState.bracket.rounds.find(r => r.roundNumber === currentRoundNum);
+            
+            // Get all winners from current round
+            const winners = [];
+            currentRound.matches.forEach(match => {
+                if (match.completed && match.winner) {
+                    winners.push(match.winner);
+                }
+            });
+
+            // If we have enough winners for a next round and next round doesn't exist
+            if (winners.length > 1) {
+                const nextRoundNum = currentRoundNum + 1;
+                const existingNextRound = gameState.bracket.rounds.find(r => r.roundNumber === nextRoundNum);
+                
+                if (!existingNextRound) {
+                    const nextMatches = [];
+                    
+                    for (let i = 0; i < winners.length; i += 2) {
+                        const match = {
+                            id: `r${nextRoundNum}m${Math.floor(i/2) + 1}`,
+                            player1: winners[i],
+                            player2: winners[i + 1] || 'BYE',
+                            winner: null,
+                            completed: false,
+                            roundNumber: nextRoundNum
+                        };
+
+                        // Auto-advance bye matches
+                        if (match.player2 === 'BYE') {
+                            match.winner = match.player1;
+                            match.completed = true;
+                        }
+
+                        nextMatches.push(match);
+                    }
+
+                    gameState.bracket.rounds.push({
+                        roundNumber: nextRoundNum,
+                        matches: nextMatches,
+                        name: getRoundName(nextRoundNum, winners.length)
+                    });
+
+                    // Simulate non-player matches immediately
+                    nextMatches.forEach(match => {
+                        if (!match.completed && match.player1 !== 'You' && match.player2 !== 'You') {
+                            const winner = Math.random() > 0.5 ? match.player1 : match.player2;
+                            match.winner = winner;
+                            match.completed = true;
+                        }
+                    });
+                }
+            }
         }
 
         function calculateFinalPlacement() {
-            // Calculate placement based on when player was eliminated
+            if (!gameState.currentMatch) return '🏆 1ST PLACE';
+            
             const currentRoundNum = gameState.currentMatch.round.roundNumber;
             const totalPlayers = gameState.currentTournament.players;
+            const totalRounds = Math.ceil(Math.log2(totalPlayers));
             
-            if (currentRoundNum === 1) {
-                if (totalPlayers >= 32) return 'Top 32';
-                if (totalPlayers >= 16) return 'Top 16';
-                return 'Top 8';
-            } else if (currentRoundNum === 2) {
-                if (totalPlayers >= 16) return 'Top 8';
-                return 'Top 4';
-            } else if (currentRoundNum === 3) {
-                return 'Top 4';
+            // Calculate placement based on round eliminated
+            if (currentRoundNum === totalRounds) {
+                return '🥈 2ND PLACE';
+            } else if (currentRoundNum === totalRounds - 1) {
+                return '🥉 3RD PLACE';
+            } else if (currentRoundNum === totalRounds - 2) {
+                return 'TOP 4';
+            } else if (currentRoundNum === totalRounds - 3) {
+                return 'TOP 8';
+            } else if (currentRoundNum === totalRounds - 4) {
+                return 'TOP 16';
             } else {
-                return '2nd Place';
+                return `ROUND ${currentRoundNum} ELIMINATION`;
             }
         }
 
         function setupResultsView() {
             // Determine final placement
-            let placement = '🏆 1ST PLACE';
+            const placement = calculateFinalPlacement();
             let prizeWon = 0;
             
-            if (!gameState.currentMatch) {
-                // Player won the tournament
+            // Calculate prize based on placement
+            if (placement.includes('1ST')) {
                 prizeWon = Math.floor(gameState.currentTournament.prizePool * 0.5);
-            } else {
-                // Player was eliminated
-                placement = calculateFinalPlacement();
-                if (placement.includes('2nd')) {
-                    prizeWon = Math.floor(gameState.currentTournament.prizePool * 0.3);
-                } else if (placement.includes('3rd') || placement.includes('Top 4')) {
-                    prizeWon = Math.floor(gameState.currentTournament.prizePool * 0.2);
-                }
+            } else if (placement.includes('2ND')) {
+                prizeWon = Math.floor(gameState.currentTournament.prizePool * 0.3);
+            } else if (placement.includes('3RD')) {
+                prizeWon = Math.floor(gameState.currentTournament.prizePool * 0.2);
             }
+            // Other placements get no prize
 
             // Update balance
             gameState.balance += prizeWon;
