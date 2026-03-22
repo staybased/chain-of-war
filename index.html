@@ -5,21 +5,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chain of War - Tactical Combat Simulator</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&display=swap');
+
+/* SHARED VISUAL STANDARDS */
+/* BASE */
+body { background: #050510 !important; }
+
+/* TYPOGRAPHY */
+h1, h2, h3, .title, .header { font-family: 'Orbitron', system-ui, sans-serif !important; letter-spacing: 3px; }
+
+/* PANELS - glass morphism */
+.panel, .card, section, .container, .sidebar, [class*="panel"], [class*="card"], [class*="section"] {
+    background: rgba(255,255,255,0.03) !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    backdrop-filter: blur(8px);
+    border-radius: 12px !important;
+}
+
+/* STAT COLORS */
+.stat-war, [data-stat="war"] { color: #B87333 !important; }
+.stat-res, [data-stat="res"] { color: #708090 !important; }
+.stat-vel, [data-stat="vel"] { color: #00E5FF !important; }
+.stat-acc, [data-stat="acc"] { color: #FFB300 !important; }
+.stat-dis, [data-stat="dis"] { color: #7B1FA2 !important; }
+.stat-ins, [data-stat="ins"] { color: #00C853 !important; }
+
+/* BUTTONS */
+button, .btn, [class*="btn"], input[type="submit"] {
+    background: linear-gradient(135deg, #00E5FF, #0088FF) !important;
+    color: #000 !important;
+    border: none !important;
+    border-radius: 8px !important;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease !important;
+}
+button:hover, .btn:hover { box-shadow: 0 0 20px rgba(0,229,255,0.4) !important; transform: translateY(-1px); }
+
+/* INTERACTIVE */
+* { transition: color 0.2s, border-color 0.2s, box-shadow 0.2s, opacity 0.2s; }
+
+/* COMBAT-SPECIFIC ANIMATIONS */
+@keyframes pulse-select { 
+    0%,100% { box-shadow: 0 0 10px rgba(0,229,255,0.2); } 
+    50% { box-shadow: 0 0 20px rgba(0,229,255,0.5); } 
+}
+
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&display=swap');
+        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        @font-face {
-            font-family: 'Orbitron';
-            font-display: swap;
-            src: url('data:text/css;base64,') format('woff2');
-            /* Fallback to system fonts */
-        }
-
         body {
-            font-family: 'Segoe UI', 'Roboto', sans-serif;
+            font-family: 'Orbitron', system-ui, sans-serif;
             background: #050510;
             color: #E0E0E0;
             overflow: hidden;
@@ -27,6 +70,7 @@
             background-image: 
                 radial-gradient(circle at 20% 20%, rgba(184, 115, 51, 0.1) 0%, transparent 50%),
                 radial-gradient(circle at 80% 80%, rgba(74, 20, 140, 0.1) 0%, transparent 50%);
+            transition: all 0.2s ease;
         }
 
         .game-header {
@@ -35,8 +79,9 @@
             left: 0;
             right: 0;
             height: 60px;
-            background: linear-gradient(90deg, #0a0a1a 0%, #1a1a2a 50%, #0a0a1a 100%);
-            border-bottom: 2px solid #333;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            backdrop-filter: blur(8px);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -49,9 +94,11 @@
             align-items: center;
             gap: 15px;
             font-size: 24px;
-            font-weight: bold;
+            font-weight: 700;
             color: #FFD700;
             text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            letter-spacing: 4px;
+            text-transform: uppercase;
         }
 
         .game-title img {
@@ -68,11 +115,13 @@
 
         .left-panel, .right-panel {
             width: 300px;
-            background: linear-gradient(180deg, #111122 0%, #0a0a0f 100%);
-            border: 1px solid #333;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            backdrop-filter: blur(8px);
             padding: 16px;
             overflow-y: auto;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            transition: all 0.2s ease;
         }
 
         .right-panel {
@@ -106,7 +155,7 @@
             justify-content: center;
             border: 1px solid #444;
             font-size: 10px;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             clip-path: polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%);
             background-size: cover;
             background-position: center;
@@ -147,23 +196,48 @@
         .hex:hover {
             transform: scale(1.1);
             z-index: 10;
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 12px rgba(0,229,255,0.3);
         }
 
         .hex.selected {
             border-color: #FFD700;
             box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
             transform: scale(1.15);
+            animation: pulse-select 2s infinite;
+        }
+
+        @keyframes unitPulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.2); }
+            50% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
         }
 
         .hex.valid-move {
-            border-color: #00FF7F;
-            box-shadow: 0 0 15px rgba(0, 255, 127, 0.4);
+            border-color: #00E5FF;
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
         }
 
         .hex.valid-attack {
             border-color: #FF4444;
             box-shadow: 0 0 15px rgba(255, 68, 68, 0.6);
+        }
+
+        .hex.attack-hit {
+            animation: attackHit 0.15s ease;
+        }
+
+        @keyframes attackHit {
+            0% { background-color: rgba(255, 68, 68, 0.8); }
+            100% { background-color: transparent; }
+        }
+
+        .hex.unit-death {
+            animation: unitDeath 0.3s ease;
+        }
+
+        @keyframes unitDeath {
+            0% { background-color: rgba(255, 68, 68, 0.8); }
+            50% { background-color: rgba(255, 68, 68, 0.8); }
+            100% { background-color: transparent; opacity: 0.3; }
         }
 
         .unit {
@@ -181,6 +255,7 @@
             font-weight: bold;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
             border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.2s ease;
         }
 
         .unit.player1 { 
@@ -206,9 +281,9 @@
             transition: width 0.3s ease;
         }
 
-        .health-high { background: linear-gradient(90deg, #00FF7F, #32CD32); }
-        .health-medium { background: linear-gradient(90deg, #FFD700, #FFA500); }
-        .health-low { background: linear-gradient(90deg, #FF6B6B, #FF4444); }
+        .health-high { background: linear-gradient(90deg, #00C853, #4CAF50); }
+        .health-medium { background: linear-gradient(90deg, #FFB300, #FFA000); }
+        .health-low { background: linear-gradient(90deg, #FF2D2D, #D32F2F); }
 
         /* Faction Selection */
         #armySelection {
@@ -232,10 +307,14 @@
         }
 
         .player-select {
+            font-family: 'Orbitron', system-ui, sans-serif;
             font-size: 28px;
             color: #FFD700;
             margin-bottom: 10px;
             text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            font-weight: 600;
         }
 
         .faction-grid {
@@ -247,12 +326,13 @@
         }
 
         .faction-option {
-            background: linear-gradient(135deg, #1a1a2a 0%, #0f0f1f 100%);
-            border: 2px solid #333;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            backdrop-filter: blur(8px);
             border-radius: 12px;
             padding: 20px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             text-align: center;
             min-height: 200px;
             display: flex;
@@ -267,9 +347,13 @@
         }
 
         .faction-option h3 {
+            font-family: 'Orbitron', system-ui, sans-serif;
             font-size: 18px;
             margin-bottom: 10px;
             text-shadow: 0 0 8px currentColor;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            font-weight: 600;
         }
 
         .faction-option p {
@@ -292,20 +376,24 @@
 
         /* UI Panels */
         .panel-section {
-            background: rgba(20, 20, 30, 0.8);
-            border: 1px solid #444;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            backdrop-filter: blur(8px);
             border-radius: 8px;
             padding: 15px;
             margin-bottom: 15px;
         }
 
         .panel-header {
+            font-family: 'Orbitron', system-ui, sans-serif;
             font-size: 16px;
-            font-weight: bold;
+            font-weight: 600;
             color: #FFD700;
             margin-bottom: 10px;
             padding-bottom: 5px;
             border-bottom: 1px solid #444;
+            letter-spacing: 4px;
+            text-transform: uppercase;
         }
 
         .unit-list {
@@ -320,7 +408,7 @@
             padding: 8px;
             margin-bottom: 5px;
             cursor: pointer;
-            transition: background 0.3s ease;
+            transition: all 0.2s ease;
             font-size: 12px;
         }
 
@@ -349,6 +437,7 @@
 
         .stat-label {
             width: 24px;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
             font-weight: bold;
         }
 
@@ -381,7 +470,7 @@
             padding: 10px;
             max-height: 150px;
             overflow-y: auto;
-            font-family: 'Courier New', monospace;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
             font-size: 11px;
             line-height: 1.3;
         }
@@ -390,12 +479,14 @@
             margin-bottom: 3px;
             padding: 2px 4px;
             border-radius: 3px;
+            transition: all 0.2s ease;
         }
 
-        .log-info { color: #87CEEB; }
-        .log-damage { color: #FF6B6B; background: rgba(255, 107, 107, 0.1); }
+        .log-info { color: #00E5FF; }
+        .log-damage { color: #B87333; background: rgba(184, 115, 51, 0.1); }
         .log-heal { color: #98FB98; background: rgba(152, 251, 152, 0.1); }
         .log-critical { color: #FFD700; background: rgba(255, 215, 0, 0.1); }
+        .log-miss { color: #555; }
 
         /* Game Controls */
         .game-controls {
@@ -405,20 +496,21 @@
         }
 
         .btn {
-            background: linear-gradient(135deg, #2a2a3a 0%, #1a1a2a 100%);
-            border: 1px solid #555;
-            color: #E0E0E0;
+            background: linear-gradient(135deg, #00E5FF, #0088FF);
+            border: none;
+            color: #000;
             padding: 8px 16px;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             font-size: 12px;
             font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
         }
 
         .btn:hover {
-            background: linear-gradient(135deg, #3a3a4a 0%, #2a2a3a 100%);
-            border-color: #777;
+            box-shadow: 0 0 20px rgba(0,229,255,0.4);
             transform: translateY(-1px);
         }
 
@@ -427,27 +519,55 @@
         }
 
         .btn.primary {
-            background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
-            border-color: #4CAF50;
+            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+            color: #fff;
         }
 
         .btn.danger {
-            background: linear-gradient(135deg, #f44336 0%, #c62828 100%);
-            border-color: #f44336;
+            background: linear-gradient(135deg, #f44336, #c62828);
+            color: #fff;
         }
 
         .phase-indicator {
             position: fixed;
             top: 65px;
             right: 20px;
-            background: rgba(20, 20, 30, 0.9);
-            border: 1px solid #555;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            backdrop-filter: blur(8px);
             border-radius: 5px;
             padding: 10px 15px;
+            font-family: 'Orbitron', system-ui, sans-serif;
             font-size: 14px;
             font-weight: bold;
             color: #FFD700;
             z-index: 100;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+        }
+
+        .phase-flash {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Orbitron', system-ui, sans-serif;
+            font-size: 36px;
+            font-weight: 700;
+            color: #00E5FF;
+            text-shadow: 0 0 20px rgba(0,229,255,0.8);
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            z-index: 1001;
+            animation: phaseFlash 0.5s ease;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        @keyframes phaseFlash {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
         }
 
         /* Responsive Design */
@@ -545,7 +665,7 @@
                 <div class="panel-header">Current Player</div>
                 <div id="currentPlayerInfo">
                     <div id="currentFaction">No faction selected</div>
-                    <div id="currentPoints" style="font-size: 12px; color: #888;">0 / 1000 pts</div>
+                    <div id="currentPoints" style="font-size: 12px; color: #888; font-family: 'JetBrains Mono', 'Courier New', monospace;">0 / 1000 pts</div>
                 </div>
             </div>
 
@@ -1025,6 +1145,17 @@
             });
         }
 
+        function showPhaseFlash(text) {
+            const flash = document.createElement('div');
+            flash.className = 'phase-flash';
+            flash.textContent = text;
+            document.body.appendChild(flash);
+            
+            setTimeout(() => {
+                flash.remove();
+            }, 500);
+        }
+
         function onHexClick(row, col) {
             const hex = gameState.battlefield[row][col];
             
@@ -1076,6 +1207,7 @@
                 } else {
                     gameState.phase = 'movement';
                     gameState.activePlayer = 1;
+                    showPhaseFlash("MOVEMENT PHASE");
                     addToBattleLog("Deployment complete. Combat phase begins!", "info");
                     addToBattleLog(`Turn ${gameState.turn} - Player 1 movement phase`, "info");
                 }
@@ -1090,6 +1222,7 @@
                     moveUnit(gameState.selectedUnit, row, col);
                     clearSelection();
                     gameState.phase = 'action';
+                    showPhaseFlash("ACTION PHASE");
                     updateUI();
                     addToBattleLog("Movement complete. Action phase begins.", "info");
                 }
@@ -1226,6 +1359,11 @@
             let attackerRoll, defenderRoll;
             let attackerDamage = 0, defenderDamage = 0;
             
+            // Attack hit animation
+            const targetHex = document.getElementById(`hex-${defender.position.row}-${defender.position.col}`);
+            targetHex.classList.add('attack-hit');
+            setTimeout(() => targetHex.classList.remove('attack-hit'), 150);
+            
             if (attackerInitiative >= defenderInitiative) {
                 // Attacker goes first
                 attackerRoll = rollD100() + (attacker.war * 8);
@@ -1246,7 +1384,7 @@
                     }
                 } else {
                     const missType = attackerRoll <= 5 ? "FUMBLES" : "misses";
-                    addToBattleLog(`${attacker.name} ${missType} ${defender.name}`, "info");
+                    addToBattleLog(`${attacker.name} ${missType} ${defender.name}`, "miss");
                 }
                 
                 // Defender counter-attack (if still alive and in range)
@@ -1274,11 +1412,17 @@
             // Check for unit destruction
             if (defender.currentHp <= 0) {
                 addToBattleLog(`${defender.name} is destroyed!`, "damage");
+                const targetHex = document.getElementById(`hex-${defender.position.row}-${defender.position.col}`);
+                targetHex.classList.add('unit-death');
+                setTimeout(() => targetHex.classList.remove('unit-death'), 300);
                 removeUnit(defender);
             }
             
             if (attacker.currentHp <= 0) {
                 addToBattleLog(`${attacker.name} is destroyed!`, "damage");
+                const targetHex = document.getElementById(`hex-${attacker.position.row}-${attacker.position.col}`);
+                targetHex.classList.add('unit-death');
+                setTimeout(() => targetHex.classList.remove('unit-death'), 300);
                 removeUnit(attacker);
             }
             
@@ -1328,6 +1472,7 @@
             }
             
             gameState.phase = 'movement';
+            showPhaseFlash("MOVEMENT PHASE");
             clearSelection();
             updateUI();
             
@@ -1439,7 +1584,7 @@
                     <div class="unit-item" style="${activatedClass}" onclick="focusOnUnit('${unit.id}')">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <span>${unit.icon} ${unit.name}</span>
-                            <span style="font-size: 10px; color: #888;">${unit.currentHp}/${unit.maxHp} HP</span>
+                            <span style="font-size: 10px; color: #888; font-family: 'JetBrains Mono', 'Courier New', monospace;">${unit.currentHp}/${unit.maxHp} HP</span>
                         </div>
                         <div class="stat-bars">
                             <div class="stat-bar">
@@ -1447,42 +1592,42 @@
                                 <div class="stat-value">
                                     <div class="stat-fill war-stat" style="width: ${(unit.war / 10) * 100}%"></div>
                                 </div>
-                                <span style="font-size: 10px;">${unit.war}</span>
+                                <span style="font-size: 10px; font-family: 'JetBrains Mono', 'Courier New', monospace;">${unit.war}</span>
                             </div>
                             <div class="stat-bar">
                                 <span class="stat-label" style="color: #708090;">RES</span>
                                 <div class="stat-value">
                                     <div class="stat-fill res-stat" style="width: ${(unit.res / 10) * 100}%"></div>
                                 </div>
-                                <span style="font-size: 10px;">${unit.res}</span>
+                                <span style="font-size: 10px; font-family: 'JetBrains Mono', 'Courier New', monospace;">${unit.res}</span>
                             </div>
                             <div class="stat-bar">
                                 <span class="stat-label" style="color: #00E5FF;">VEL</span>
                                 <div class="stat-value">
                                     <div class="stat-fill vel-stat" style="width: ${(unit.vel / 10) * 100}%"></div>
                                 </div>
-                                <span style="font-size: 10px;">${unit.vel}</span>
+                                <span style="font-size: 10px; font-family: 'JetBrains Mono', 'Courier New', monospace;">${unit.vel}</span>
                             </div>
                             <div class="stat-bar">
                                 <span class="stat-label" style="color: #FFB300;">ACC</span>
                                 <div class="stat-value">
                                     <div class="stat-fill acc-stat" style="width: ${(unit.acc / 10) * 100}%"></div>
                                 </div>
-                                <span style="font-size: 10px;">${unit.acc}</span>
+                                <span style="font-size: 10px; font-family: 'JetBrains Mono', 'Courier New', monospace;">${unit.acc}</span>
                             </div>
                             <div class="stat-bar">
                                 <span class="stat-label" style="color: #7B1FA2;">DIS</span>
                                 <div class="stat-value">
                                     <div class="stat-fill dis-stat" style="width: ${(unit.dis / 10) * 100}%"></div>
                                 </div>
-                                <span style="font-size: 10px;">${unit.dis}</span>
+                                <span style="font-size: 10px; font-family: 'JetBrains Mono', 'Courier New', monospace;">${unit.dis}</span>
                             </div>
                             <div class="stat-bar">
                                 <span class="stat-label" style="color: #00C853;">INS</span>
                                 <div class="stat-value">
                                     <div class="stat-fill ins-stat" style="width: ${(unit.ins / 10) * 100}%"></div>
                                 </div>
-                                <span style="font-size: 10px;">${unit.ins}</span>
+                                <span style="font-size: 10px; font-family: 'JetBrains Mono', 'Courier New', monospace;">${unit.ins}</span>
                             </div>
                         </div>
                     </div>
@@ -1504,46 +1649,46 @@
             unitDetails.innerHTML = `
                 <div style="text-align: center; margin-bottom: 15px;">
                     <div style="font-size: 24px; margin-bottom: 5px;">${unit.icon}</div>
-                    <div style="font-size: 16px; font-weight: bold; color: ${faction.accent};">${unit.name}</div>
-                    <div style="font-size: 12px; color: #888;">${unit.role} • ${unit.cost} pts</div>
+                    <div style="font-family: 'Orbitron', system-ui, sans-serif; font-size: 16px; font-weight: bold; color: ${faction.accent};">${unit.name}</div>
+                    <div style="font-size: 12px; color: #888;">${unit.role} • <span style="font-family: 'JetBrains Mono', 'Courier New', monospace;">${unit.cost} pts</span></div>
                 </div>
                 
                 <div style="margin-bottom: 15px;">
-                    <div style="font-size: 12px; margin-bottom: 5px; color: #FFD700;">Health: ${unit.currentHp}/${unit.maxHp}</div>
+                    <div style="font-size: 12px; margin-bottom: 5px; color: #FFD700; font-family: 'JetBrains Mono', 'Courier New', monospace;">Health: ${unit.currentHp}/${unit.maxHp}</div>
                     <div style="background: #333; height: 8px; border-radius: 4px; overflow: hidden;">
-                        <div style="height: 100%; width: ${healthPercent}%; background: ${healthPercent > 66 ? '#00FF7F' : healthPercent > 33 ? '#FFD700' : '#FF6B6B'}; transition: width 0.3s ease;"></div>
+                        <div style="height: 100%; width: ${healthPercent}%; background: ${healthPercent > 66 ? '#00C853' : healthPercent > 33 ? '#FFB300' : '#FF2D2D'}; transition: width 0.3s ease;"></div>
                     </div>
                 </div>
                 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
                     <div style="text-align: center; padding: 5px; background: rgba(184, 115, 51, 0.2); border-radius: 4px;">
-                        <div style="font-size: 18px; font-weight: bold; color: #B87333;">${unit.war}</div>
-                        <div style="font-size: 10px; color: #B87333;">WAR</div>
+                        <div style="font-size: 18px; font-weight: bold; color: #B87333; font-family: 'JetBrains Mono', 'Courier New', monospace;">${unit.war}</div>
+                        <div style="font-size: 10px; color: #B87333; font-family: 'JetBrains Mono', 'Courier New', monospace;">WAR</div>
                     </div>
                     <div style="text-align: center; padding: 5px; background: rgba(112, 128, 144, 0.2); border-radius: 4px;">
-                        <div style="font-size: 18px; font-weight: bold; color: #708090;">${unit.res}</div>
-                        <div style="font-size: 10px; color: #708090;">RES</div>
+                        <div style="font-size: 18px; font-weight: bold; color: #708090; font-family: 'JetBrains Mono', 'Courier New', monospace;">${unit.res}</div>
+                        <div style="font-size: 10px; color: #708090; font-family: 'JetBrains Mono', 'Courier New', monospace;">RES</div>
                     </div>
                     <div style="text-align: center; padding: 5px; background: rgba(0, 229, 255, 0.2); border-radius: 4px;">
-                        <div style="font-size: 18px; font-weight: bold; color: #00E5FF;">${unit.vel}</div>
-                        <div style="font-size: 10px; color: #00E5FF;">VEL</div>
+                        <div style="font-size: 18px; font-weight: bold; color: #00E5FF; font-family: 'JetBrains Mono', 'Courier New', monospace;">${unit.vel}</div>
+                        <div style="font-size: 10px; color: #00E5FF; font-family: 'JetBrains Mono', 'Courier New', monospace;">VEL</div>
                     </div>
                     <div style="text-align: center; padding: 5px; background: rgba(255, 179, 0, 0.2); border-radius: 4px;">
-                        <div style="font-size: 18px; font-weight: bold; color: #FFB300;">${unit.acc}</div>
-                        <div style="font-size: 10px; color: #FFB300;">ACC</div>
+                        <div style="font-size: 18px; font-weight: bold; color: #FFB300; font-family: 'JetBrains Mono', 'Courier New', monospace;">${unit.acc}</div>
+                        <div style="font-size: 10px; color: #FFB300; font-family: 'JetBrains Mono', 'Courier New', monospace;">ACC</div>
                     </div>
                     <div style="text-align: center; padding: 5px; background: rgba(123, 31, 162, 0.2); border-radius: 4px;">
-                        <div style="font-size: 18px; font-weight: bold; color: #7B1FA2;">${unit.dis}</div>
-                        <div style="font-size: 10px; color: #7B1FA2;">DIS</div>
+                        <div style="font-size: 18px; font-weight: bold; color: #7B1FA2; font-family: 'JetBrains Mono', 'Courier New', monospace;">${unit.dis}</div>
+                        <div style="font-size: 10px; color: #7B1FA2; font-family: 'JetBrains Mono', 'Courier New', monospace;">DIS</div>
                     </div>
                     <div style="text-align: center; padding: 5px; background: rgba(0, 200, 83, 0.2); border-radius: 4px;">
-                        <div style="font-size: 18px; font-weight: bold; color: #00C853;">${unit.ins}</div>
-                        <div style="font-size: 10px; color: #00C853;">INS</div>
+                        <div style="font-size: 18px; font-weight: bold; color: #00C853; font-family: 'JetBrains Mono', 'Courier New', monospace;">${unit.ins}</div>
+                        <div style="font-size: 10px; color: #00C853; font-family: 'JetBrains Mono', 'Courier New', monospace;">INS</div>
                     </div>
                 </div>
                 
                 <div>
-                    <div style="font-size: 12px; font-weight: bold; color: #FFD700; margin-bottom: 5px;">Abilities:</div>
+                    <div style="font-size: 12px; font-weight: bold; color: #FFD700; margin-bottom: 5px; font-family: 'Orbitron', system-ui, sans-serif; letter-spacing: 4px; text-transform: uppercase; font-weight: 600;">Abilities:</div>
                     <div style="font-size: 11px; color: #CCC;">
                         ${unit.abilities.map(ability => `• ${ability}`).join('<br>')}
                     </div>
@@ -1593,6 +1738,7 @@
         document.getElementById('nextPhaseBtn').addEventListener('click', () => {
             if (gameState.phase === 'movement') {
                 gameState.phase = 'action';
+                showPhaseFlash("ACTION PHASE");
                 clearSelection();
                 updateUI();
                 addToBattleLog("Action phase begins", "info");

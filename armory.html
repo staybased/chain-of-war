@@ -5,6 +5,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chain of War - The Armory</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&display=swap');
+
+/* SHARED VISUAL STANDARDS */
+/* BASE */
+body { background: #050510 !important; }
+
+/* TYPOGRAPHY */
+h1, h2, h3, .title, .header { font-family: 'Orbitron', system-ui, sans-serif !important; letter-spacing: 3px; }
+
+/* PANELS - glass morphism */
+.panel, .card, section, .container, .sidebar, [class*="panel"], [class*="card"], [class*="section"] {
+    background: rgba(255,255,255,0.03) !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    backdrop-filter: blur(8px);
+    border-radius: 12px !important;
+}
+
+/* STAT COLORS */
+.stat-war, [data-stat="war"] { color: #B87333 !important; }
+.stat-res, [data-stat="res"] { color: #708090 !important; }
+.stat-vel, [data-stat="vel"] { color: #00E5FF !important; }
+.stat-acc, [data-stat="acc"] { color: #FFB300 !important; }
+.stat-dis, [data-stat="dis"] { color: #7B1FA2 !important; }
+.stat-ins, [data-stat="ins"] { color: #00C853 !important; }
+
+/* BUTTONS */
+button, .btn, [class*="btn"], input[type="submit"] {
+    background: linear-gradient(135deg, #00E5FF, #0088FF) !important;
+    color: #000 !important;
+    border: none !important;
+    border-radius: 8px !important;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease !important;
+}
+button:hover, .btn:hover { box-shadow: 0 0 20px rgba(0,229,255,0.4) !important; transform: translateY(-1px); }
+
+/* INTERACTIVE */
+* { transition: color 0.2s, border-color 0.2s, box-shadow 0.2s, opacity 0.2s; }
+
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&display=swap');
+        
         * {
             margin: 0;
             padding: 0;
@@ -12,19 +56,12 @@
         }
 
         body {
-            background: linear-gradient(135deg, #050510 0%, #0a0a15 25%, #050510 50%, #0a0a15 75%, #050510 100%);
+            background: #050510;
             background-size: 400% 400%;
-            animation: gradientShift 30s ease infinite;
             min-height: 100vh;
-            font-family: 'Arial', sans-serif;
+            font-family: 'Orbitron', 'Arial', sans-serif;
             color: #ffffff;
             overflow-x: hidden;
-        }
-
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
         }
 
         /* Animated Background */
@@ -77,9 +114,9 @@
 
         /* Header */
         .header {
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            backdrop-filter: blur(8px);
             padding: 20px;
             position: sticky;
             top: 0;
@@ -100,15 +137,17 @@
         }
 
         .chain-of-war {
+            font-family: 'Orbitron', sans-serif;
             font-size: 36px;
             font-weight: bold;
-            letter-spacing: 10px;
+            letter-spacing: 6px;
             color: #00FFFF;
             text-shadow: 0 0 20px #00FFFF;
             margin-bottom: 5px;
         }
 
         .the-armory {
+            font-family: 'Orbitron', sans-serif;
             font-size: 14px;
             letter-spacing: 6px;
             color: #FFB300;
@@ -124,8 +163,8 @@
             width: 100%;
             padding: 12px 15px 12px 45px;
             background: #111;
-            border: 2px solid #333;
-            border-radius: 25px;
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 24px;
             color: #fff;
             font-size: 14px;
             transition: all 0.3s ease;
@@ -133,7 +172,7 @@
 
         .search-input:focus {
             outline: none;
-            border-color: #00FFFF;
+            border-color: #00E5FF;
             box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
         }
 
@@ -202,7 +241,7 @@
 
         .army-builder-toggle {
             padding: 10px 20px;
-            background: linear-gradient(45deg, #4CAF50, #2E7D32);
+            background: linear-gradient(45deg, #00FFFF, #0099CC);
             border: none;
             border-radius: 25px;
             color: white;
@@ -216,17 +255,17 @@
 
         .army-builder-toggle:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
         }
 
         /* Collection Stats */
         .collection-stats {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(5px);
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            backdrop-filter: blur(8px);
             padding: 15px 20px;
             margin: 20px;
             border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
             gap: 30px;
             align-items: center;
@@ -267,38 +306,41 @@
             margin: 0 auto;
         }
 
-        /* Unit Card */
+        /* Unit Card - Enhanced */
         .unit-card {
             width: 180px;
             height: 270px;
-            background: #1a1a1a;
-            border: 2px solid #333;
-            border-radius: 15px;
+            background: #0f0f1a;
+            border: 2px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
             overflow: hidden;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: transform 0.25s, box-shadow 0.25s, opacity 0.4s;
             transform-style: preserve-3d;
             position: relative;
+            opacity: 0;
+            transform: translateY(20px);
         }
 
         .unit-card:hover {
             transform: translateY(-8px) scale(1.03);
-            border-color: #666;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+            border-color: rgba(0, 255, 255, 0.8);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 255, 255, 0.4);
         }
 
-        .unit-card.common { border-color: #333; }
+        /* Rarity-specific borders and animations */
+        .unit-card.common { border-color: rgba(255, 255, 255, 0.08); }
         .unit-card.uncommon { 
-            border-color: #AAA;
+            border-color: rgba(170, 170, 170, 0.6);
             box-shadow: 0 0 5px rgba(170, 170, 170, 0.3);
         }
         .unit-card.rare { 
-            border-color: #2196F3;
+            border-color: rgba(33, 150, 243, 0.8);
             box-shadow: 0 0 10px rgba(33, 150, 243, 0.4);
             animation: rarePulse 3s ease-in-out infinite;
         }
         .unit-card.epic { 
-            border-color: #9C27B0;
+            border-color: rgba(156, 39, 176, 0.8);
             box-shadow: 0 0 15px rgba(156, 39, 176, 0.5);
             animation: epicPulse 2s ease-in-out infinite;
         }
@@ -307,7 +349,18 @@
             border-image: conic-gradient(#FFD700, #FFA500, #FFD700, #FFA500) 1;
             box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
             animation: legendaryGlow 2s ease-in-out infinite;
-            position: relative;
+        }
+
+        /* Staggered card entrance animation */
+        .unit-card {
+            animation: cardStagger 0.6s ease forwards;
+        }
+
+        @keyframes cardStagger {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         @keyframes rarePulse {
@@ -429,6 +482,7 @@
             transition: width 0.5s ease;
         }
 
+        /* Individual stat colors */
         .stat-fill.war { background: #B87333; }
         .stat-fill.res { background: #708090; }
         .stat-fill.vel { background: #00E5FF; }
@@ -475,15 +529,15 @@
             color: #FFB300;
         }
 
-        /* Expanded Card Modal */
+        /* Enhanced Modal */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(12px);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -501,16 +555,17 @@
         .expanded-card {
             width: 500px;
             max-height: 650px;
-            background: #0D0D0D;
+            background: #0a0a14;
             background-image: 
                 radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.05) 1px, transparent 0);
             background-size: 20px 20px;
             border: 2px solid #444;
-            border-radius: 12px;
+            border-radius: 16px;
             overflow-y: auto;
-            transform: scale(0.8);
-            transition: all 0.3s ease;
+            transform: scale(0.9);
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             position: relative;
+            box-shadow: 0 0 60px rgba(0,0,0,0.8);
         }
 
         .modal-overlay.active .expanded-card {
@@ -520,7 +575,6 @@
         /* Rarity-specific modal styling */
         .expanded-card.common { 
             border-color: #444;
-            box-shadow: 0 0 60px rgba(0,0,0,0.8);
         }
         .expanded-card.uncommon { 
             border-color: #AAA;
@@ -690,7 +744,7 @@
             font-size: 11px;
         }
 
-        /* Stat-specific colors */
+        /* Enhanced stat-specific colors for modal */
         .modal-stat-label.war { color: #B87333; }
         .modal-stat-label.res { color: #708090; }
         .modal-stat-label.vel { color: #00E5FF; }
@@ -860,12 +914,12 @@
         }
 
         .modal-button.primary {
-            background: linear-gradient(45deg, var(--faction-color, #00FFFF), rgba(255,255,255,0.1));
-            border-color: var(--faction-color, #00FFFF);
+            background: linear-gradient(45deg, #00FFFF, rgba(255,255,255,0.1));
+            border-color: #00FFFF;
         }
 
         .modal-button.primary:hover {
-            box-shadow: 0 5px 15px rgba(var(--faction-rgb, 0,255,255), 0.3);
+            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
         }
 
         /* Legendary modal enhancements */
@@ -1139,7 +1193,55 @@
         .steel-legion { --faction-color: #556B2F; --faction-rgb: 85,107,47; }
         .bone-prophets { --faction-color: #2A2020; --faction-rgb: 42,32,32; }
         .apex-hunters { --faction-color: #00695C; --faction-rgb: 0,105,92; }
+
+        /* Filter animation for card transitions */
+        @keyframes cardFadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+
+        @keyframes cardFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-fade-out {
+            animation: cardFadeOut 0.15s ease forwards;
+        }
+
+        .card-fade-in {
+            animation: cardFadeIn 0.15s ease forwards;
+        }
+
+        /* Enhanced Radar Chart Animation */
+        @keyframes radarDraw {
+            from { 
+                stroke-dasharray: 0, 1000; 
+                opacity: 0; 
+            }
+            to { 
+                stroke-dasharray: 1000, 0; 
+                opacity: 1; 
+            }
+        }
+
+        .radar-line {
+            animation: radarDraw 0.5s ease forwards;
+        }
     </style>
+    
+    <script>
+        // Armory-specific stagger entrance animation on DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.unit-card');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 30);
+            });
+        });
+    </script>
 <link rel="stylesheet" href="design-system.css">
 </head>
 <body>
@@ -1321,6 +1423,7 @@
             {"name":"Razor Beasts","faction":"swarm-of-xeth","role":"elites","points":180,"war":7,"res":4,"vel":7,"acc":4,"dis":2,"ins":8,"total":32,"WAR":7,"RES":4,"VEL":7,"ACC":4,"DIS":2,"INS":8,"abilityName":"Frenzy","abilityDesc":"+2 WAR for each wound taken (max +6). +1 ACC for each other Razor Beast within 2 tiles.","equipSlots":1,"abilities":"Frenzy","ability_desc":"+2 WAR for each wound taken (max +6). +1 ACC for each other Razor Beast within 2 tiles.","equipment":"Razor Talons (+2 WAR, causes bleeding)","equipment_slots":1,"flavor":"Pain only makes them hungrier.","rarity":"rare","factionName":"Swarm of Xeth","roleName":"Elites"},
             {"name":"Brood Mothers","faction":"swarm-of-xeth","role":"elites","points":220,"war":4,"res":6,"vel":4,"acc":3,"dis":6,"ins":9,"total":32,"WAR":4,"RES":6,"VEL":4,"ACC":3,"DIS":6,"INS":9,"abilityName":"Spawning","abilityDesc":"When an adjacent friendly dies, 50% chance to spawn a Skitterling. Adjacent friendly units gain +1 RES and +2 DIS.","equipSlots":2,"abilities":"Spawning","ability_desc":"When an adjacent friendly dies, 50% chance to spawn a Skitterling. Adjacent friendly units gain +1 RES and +2 DIS.","equipment":"Brood Sacs (spawning enhancement), Maternal Bond (+1 protective range)","equipment_slots":2,"flavor":"From her womb, the endless war.","rarity":"rare","factionName":"Swarm of Xeth","roleName":"Elites"},
             {"name":"Winged Hunters","faction":"swarm-of-xeth","role":"fast attack","points":140,"war":5,"res":2,"vel":9,"acc":5,"dis":2,"ins":7,"total":30,"WAR":5,"RES":2,"VEL":9,"ACC":5,"DIS":2,"INS":7,"abilityName":"Aerial Assault","abilityDesc":"Can move over terrain and units; +2 WAR when attacking from elevation.","equipSlots":1,"abilities":"Aerial Assault","ability_desc":"Can move over terrain and units; +2 WAR when attacking from elevation.","equipment":"Wing Blades (+1 WAR melee)","equipment_slots":1,"flavor":"Death from above, silent until the strike.","rarity":"uncommon","factionName":"Swarm of Xeth","roleName":"Fast Attack"},
+
             {"name":"Tunnel Stalkers","faction":"swarm-of-xeth","role":"fast attack","points":120,"war":6,"res":3,"vel":8,"acc":3,"dis":1,"ins":9,"total":30,"WAR":6,"RES":3,"VEL":8,"ACC":3,"DIS":1,"INS":9,"abilityName":"Ambush","abilityDesc":"Can deploy anywhere on the map after enemy deployment; first attack gains +3 WAR.","equipSlots":1,"abilities":"Ambush","ability_desc":"Can deploy anywhere on the map after enemy deployment; first attack gains +3 WAR.","equipment":"Burrow Claws (+1 VEL underground)","equipment_slots":1,"flavor":"They come from beneath, when you least expect.","rarity":"uncommon","factionName":"Swarm of Xeth","roleName":"Fast Attack"},
             {"name":"Siege Spitter","faction":"swarm-of-xeth","role":"heavy support","points":320,"war":8,"res":5,"vel":2,"acc":7,"dis":4,"ins":6,"total":32,"WAR":8,"RES":5,"VEL":2,"ACC":7,"DIS":4,"INS":6,"abilityName":"Bio-Artillery","abilityDesc":"Attacks ignore cover and have a 3-tile range; splash damage hits adjacent tiles.","equipSlots":1,"abilities":"Bio-Artillery","ability_desc":"Attacks ignore cover and have a 3-tile range; splash damage hits adjacent tiles.","equipment":"Acid Sacs (+1 WAR, ongoing damage)","equipment_slots":1,"flavor":"Its hunger digests stone as easily as flesh.","rarity":"rare","factionName":"Swarm of Xeth","roleName":"Heavy Support"},
             {"name":"Hive Leviathan","faction":"swarm-of-xeth","role":"heavy support","points":380,"war":7,"res":8,"vel":3,"acc":5,"dis":3,"ins":8,"total":34,"WAR":7,"RES":8,"VEL":3,"ACC":5,"DIS":3,"INS":8,"abilityName":"Regeneration","abilityDesc":"Heals 2 wounds at start of each turn. Can spawn Skitterlings at its location as a free action (max 1 per turn).","equipSlots":2,"abilities":"Regeneration","ability_desc":"Heals 2 wounds at start of each turn. Can spawn Skitterlings at its location as a free action (max 1 per turn).","equipment":"Carapace Cannon (+2 WAR ranged), Spawning Chambers (enhanced spawning)","equipment_slots":2,"flavor":"A living fortress that births an army.","rarity":"epic","factionName":"Swarm of Xeth","roleName":"Heavy Support"},
@@ -1393,759 +1496,17 @@
             {"name":"Soul Ravens","faction":"bone-prophets","role":"fast attack","points":140,"war":4,"res":2,"vel":9,"acc":5,"dis":5,"ins":7,"total":32,"WAR":4,"RES":2,"VEL":9,"ACC":5,"DIS":5,"INS":7,"abilityName":"Aerial Psionics","abilityDesc":"Can target any unit within 8 tiles with psychic attacks; +1 INS when attacking from elevation.","equipSlots":1,"abilities":"Aerial Psionics","ability_desc":"Can target any unit within 8 tiles with psychic attacks; +1 INS when attacking from elevation.","equipment":"Psychic Talons (+1 WAR, +1 INS)","equipment_slots":1,"flavor":"Death on black wings, striking minds before bodies.","rarity":"rare","factionName":"Bone Prophets","roleName":"Fast Attack"},
             {"name":"Wraith Riders","faction":"bone-prophets","role":"fast attack","points":160,"war":5,"res":3,"vel":8,"acc":4,"dis":6,"ins":8,"total":34,"WAR":5,"RES":3,"VEL":8,"ACC":4,"DIS":6,"INS":8,"abilityName":"Phantom Mount","abilityDesc":"Can move through terrain and enemy units; +2 WAR when attacking after phantom movement.","equipSlots":2,"abilities":"Phantom Mount","ability_desc":"Can move through terrain and enemy units; +2 WAR when attacking after phantom movement.","equipment":"Spirit Lance (+2 WAR), Wraith Cloak (+1 VEL when phantom)","equipment_slots":2,"flavor":"Mounted on steeds of pure psychic energy.","rarity":"epic","factionName":"Bone Prophets","roleName":"Fast Attack"},
             {"name":"Bone Titan","faction":"bone-prophets","role":"heavy support","points":380,"war":6,"res":9,"vel":2,"acc":4,"dis":8,"ins":9,"total":38,"WAR":6,"RES":9,"VEL":2,"ACC":4,"DIS":8,"INS":9,"abilityName":"Psychic Fortress","abilityDesc":"All friendly units within 2 tiles gain +3 INS and immunity to mental effects. When an enemy dies within 3 tiles, trap its soul: +1 to all stats permanently.","equipSlots":2,"abilities":"Psychic Fortress","ability_desc":"All friendly units within 2 tiles gain +3 INS and immunity to mental effects. When an enemy dies within 3 tiles, trap its soul: +1 to all stats permanently.","equipment":"Bone Cannon (+2 WAR), Soul Cage (+1 soul prison range)","equipment_slots":2,"flavor":"A cathedral of bone and malice, growing stronger with each victory.","rarity":"legendary","factionName":"Bone Prophets","roleName":"Heavy Support"},
+
             {"name":"Mind Colossus","faction":"bone-prophets","role":"heavy support","points":400,"war":4,"res":7,"vel":3,"acc":6,"dis":9,"ins":10,"total":39,"WAR":4,"RES":7,"VEL":3,"ACC":6,"DIS":9,"INS":10,"abilityName":"Mass Hypnosis","abilityDesc":"All enemy units within 4 tiles must pass INS test or skip their next turn. Can force enemy units to attack their own allies.","equipSlots":2,"abilities":"Mass Hypnosis","ability_desc":"All enemy units within 4 tiles must pass INS test or skip their next turn. Can force enemy units to attack their own allies.","equipment":"Psi-Amplifier (+1 hypnosis range), Mind Core (+1 override power)","equipment_slots":2,"flavor":"Its mere presence rewrites the battlefield's reality.","rarity":"legendary","factionName":"Bone Prophets","roleName":"Heavy Support"},
             {"name":"Alpha Prime","faction":"apex-hunters","role":"hq","points":300,"war":6,"res":6,"vel":6,"acc":6,"dis":6,"ins":8,"total":38,"WAR":6,"RES":6,"VEL":6,"ACC":6,"DIS":6,"INS":8,"abilityName":"Pack Leader","abilityDesc":"All friendly units within 3 tiles gain +1 to their highest stat. When any friendly unit dies, Alpha Prime permanently gains +1 to the stat that could have saved it.","equipSlots":3,"abilities":"Pack Leader","ability_desc":"All friendly units within 3 tiles gain +1 to their highest stat. When any friendly unit dies, Alpha Prime permanently gains +1 to the stat that could have saved it.","equipment":"Alpha Claws (+2 WAR), Bio-Crown (+1 command range), Adaptation Matrix (+1 adaptive trigger)","equipment_slots":3,"flavor":"Evolution never stops, even in the heat of battle.","rarity":"legendary","factionName":"Apex Hunters","roleName":"HQ"},
             {"name":"Hunter Pack","faction":"apex-hunters","role":"troops","points":90,"war":4,"res":3,"vel":6,"acc":4,"dis":4,"ins":7,"total":28,"WAR":4,"RES":3,"VEL":6,"ACC":4,"DIS":4,"INS":7,"abilityName":"Pack Tactics","abilityDesc":"+1 WAR for each friendly Hunter Pack within 2 tiles; +1 VEL when moving toward same target.","equipSlots":1,"abilities":"Pack Tactics","ability_desc":"+1 WAR for each friendly Hunter Pack within 2 tiles; +1 VEL when moving toward same target.","equipment":"Natural Weapons (+1 WAR when in pack)","equipment_slots":1,"flavor":"Stronger together, they move with predatory synchronization.","rarity":"common","factionName":"Apex Hunters","roleName":"Troops"},
             {"name":"Stalker Strain","faction":"apex-hunters","role":"troops","points":80,"war":5,"res":2,"vel":7,"acc":5,"dis":3,"ins":8,"total":30,"WAR":5,"RES":2,"VEL":7,"ACC":5,"DIS":3,"INS":8,"abilityName":"Stealth Hunt","abilityDesc":"-3 to enemy ACC when attacking from more than 3 tiles; +2 WAR when attacking unaware targets.","equipSlots":1,"abilities":"Stealth Hunt","ability_desc":"-3 to enemy ACC when attacking from more than 3 tiles; +2 WAR when attacking unaware targets.","equipment":"Stealth Claws (+1 WAR vs unaware)","equipment_slots":1,"flavor":"They strike from shadows you didn't know existed.","rarity":"uncommon","factionName":"Apex Hunters","roleName":"Troops"},
-            {"name":"Tracker Drones","faction":"apex-hunters","role":"troops","points":100,"war":3,"res":4,"vel":5,"acc":6,"dis":5,"ins":7,"total":30,"WAR":3,"RES":4,"VEL":5,"ACC":6,"DIS":5,"INS":7,"abilityName":"Sensor Web","abilityDesc":"All friendly units can see through this unit's sensors; reveals hidden enemies within 4 tiles.","equipSlots":2,"abilities":"Sensor Web","ability_desc":"All friendly units can see through this unit's sensors; reveals hidden enemies within 4 tiles.","equipment":"Bio-Scanner (+1 detection range), Symbiont Link (+1 sensor sharing)","equipment_slots":2,"flavor":"Living radars that map the battlefield in perfect detail.","rarity":"uncommon","factionName":"Apex Hunters","roleName":"Troops"},
-            {"name":"Apex Warriors","faction":"apex-hunters","role":"elites","points":220,"war":7,"res":5,"vel":6,"acc":5,"dis":5,"ins":7,"total":35,"WAR":7,"RES":5,"VEL":6,"ACC":5,"DIS":5,"INS":7,"abilityName":"Evolution Trigger","abilityDesc":"When taking damage from a specific source, adapt: gain +2 RES against that damage type for rest of battle.","equipSlots":2,"abilities":"Evolution Trigger","ability_desc":"When taking damage from a specific source, adapt: gain +2 RES against that damage type for rest of battle.","equipment":"Adaptive Claws (+1 WAR, triggers evolution), Reactive Hide (+1 evolution bonus)","equipment_slots":2,"flavor":"Each wound teaches them how to be invulnerable to the next.","rarity":"epic","factionName":"Apex Hunters","roleName":"Elites"},
-            {"name":"Gene-Thieves","faction":"apex-hunters","role":"elites","points":200,"war":5,"res":4,"vel":7,"acc":6,"dis":4,"ins":9,"total":35,"WAR":5,"RES":4,"VEL":7,"ACC":6,"DIS":4,"INS":9,"abilityName":"DNA Harvest","abilityDesc":"When killing an enemy, gain one of their abilities for rest of battle. Can copy the appearance and stat line of any harvested unit.","equipSlots":1,"abilities":"DNA Harvest","ability_desc":"When killing an enemy, gain one of their abilities for rest of battle. Can copy the appearance and stat line of any harvested unit.","equipment":"Extraction Tendrils (+1 harvest chance)","equipment_slots":1,"flavor":"They become what they kill, growing deadlier with each victory.","rarity":"epic","factionName":"Apex Hunters","roleName":"Elites"},
-            {"name":"Swift Hunters","faction":"apex-hunters","role":"fast attack","points":150,"war":5,"res":3,"vel":9,"acc":6,"dis":4,"ins":5,"total":32,"WAR":5,"RES":3,"VEL":9,"ACC":6,"DIS":4,"INS":5,"abilityName":"Lightning Reflexes","abilityDesc":"Can interrupt enemy actions; +2 VEL when reacting to enemy movement.","equipSlots":2,"abilities":"Lightning Reflexes","ability_desc":"Can interrupt enemy actions; +2 VEL when reacting to enemy movement.","equipment":"Speed Glands (+1 VEL), Reflex Enhancers (+1 interrupt range)","equipment_slots":2,"flavor":"Faster than thought, quicker than death itself.","rarity":"rare","factionName":"Apex Hunters","roleName":"Fast Attack"},
-            {"name":"Void Stalkers","faction":"apex-hunters","role":"fast attack","points":140,"war":6,"res":3,"vel":8,"acc":5,"dis":3,"ins":7,"total":32,"WAR":6,"RES":3,"VEL":8,"ACC":5,"DIS":3,"INS":7,"abilityName":"Phase Hunt","abilityDesc":"Can teleport short distances instead of normal movement; +2 WAR when attacking after teleportation.","equipSlots":1,"abilities":"Phase Hunt","ability_desc":"Can teleport short distances instead of normal movement; +2 WAR when attacking after teleportation.","equipment":"Phase Organs (+1 teleport range)","equipment_slots":1,"flavor":"They hunt through dimensions, striking from impossible angles.","rarity":"rare","factionName":"Apex Hunters","roleName":"Fast Attack"},
-            {"name":"Hive Tyrant","faction":"apex-hunters","role":"heavy support","points":380,"war":8,"res":7,"vel":4,"acc":6,"dis":6,"ins":7,"total":38,"WAR":8,"RES":7,"VEL":4,"ACC":6,"DIS":6,"INS":7,"abilityName":"Synaptic Control","abilityDesc":"Can control up to 3 enemy units within 4 tiles that have lost their HQ. All friendly units within 3 tiles gain random beneficial mutations each turn.","equipSlots":2,"abilities":"Synaptic Control","ability_desc":"Can control up to 3 enemy units within 4 tiles that have lost their HQ. All friendly units within 3 tiles gain random beneficial mutations each turn.","equipment":"Hive Cannon (+3 WAR), Synaptic Crown (+1 control range)","equipment_slots":2,"flavor":"The apex of evolution, bending all life to its will.","rarity":"legendary","factionName":"Apex Hunters","roleName":"Heavy Support"},
-            {"name":"Bio-Titan","faction":"apex-hunters","role":"heavy support","points":400,"war":7,"res":8,"vel":3,"acc":6,"dis":5,"ins":9,"total":38,"WAR":7,"RES":8,"VEL":3,"ACC":6,"DIS":5,"INS":9,"abilityName":"Adaptive Armor","abilityDesc":"After taking damage, gain +1 RES against that damage type permanently. Heal 1 wound per turn; gain +1 WAR for every 3 wounds healed.","equipSlots":2,"abilities":"Adaptive Armor","ability_desc":"After taking damage, gain +1 RES against that damage type permanently. Heal 1 wound per turn; gain +1 WAR for every 3 wounds healed.","equipment":"Bio-Cannon (+2 WAR), Regeneration Matrix (+1 healing rate)","equipment_slots":2,"flavor":"A living fortress that grows stronger with every battle scar.","rarity":"legendary","factionName":"Apex Hunters","roleName":"Heavy Support"}
+            {"name":"Tracker Drones","faction":"apex-hunters","role":"troops","points":100,"war":3,"res":4,"vel":5,"acc":6,"dis":5,"ins":7,"total":30,"WAR":3,"RES":4,"VEL":5,"ACC":6,"DIS":5,"INS":7,"abilityName":"Sensor Web","abilityDesc":"All friendly units can see through this unit's sensors; reveals hidden enemies within 4 tiles.","equipSlots":2,"abilities":"Sensor Web","ability_desc":"All friendly units can see through this unit's sensors; reveals hidden enemies within 4 tiles.","equipment":"Bio-Scanner (+1 detection range), Symbiont Link (+1 sensor sharing)","equipment_slots":2,"flavor":"Living radars that map the battlefield in perfect detail.","rarity":"uncommon","factionName":"Apex Hunters","roleName":"Troops"}
         ];
-
-        // Audio Context for Sound Effects
-        let audioContext;
-        let ambientSound;
-
-        // Initialize Audio
-        function initAudio() {
-            if (!audioContext) {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                
-                // Ambient drone
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-                
-                oscillator.frequency.setValueAtTime(50, audioContext.currentTime);
-                gainNode.gain.setValueAtTime(0.015, audioContext.currentTime);
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                
-                oscillator.start();
-                ambientSound = { oscillator, gainNode };
-            }
-        }
-
-        // Play Sound Effect
-        function playSound(frequency, duration = 0.1, gain = 0.05) {
-            if (!audioContext) return;
-            
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
-            gainNode.gain.setValueAtTime(gain, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration);
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator.start();
-            oscillator.stop(audioContext.currentTime + duration);
-        }
-
-        // Global state
-        let filteredUnits = [...allUnits];
-        let currentFilters = {
-            faction: 'all',
-            role: 'all',
-            rarity: 'all',
-            search: ''
-        };
-        let currentSort = 'name';
-        let armyBuilderOpen = false;
-        let selectedArmy = [];
-        let currentPointCap = 1000;
-
-        // Role icons mapping
-        const roleIcons = {
-            'hq': '👑',
-            'troops': '⚔️',
-            'elites': '⭐',
-            'fast attack': '🏃',
-            'heavy support': '🛡️'
-        };
-
-        // Rarity colors
-        const rarityColors = {
-            'common': '#666',
-            'uncommon': '#AAA', 
-            'rare': '#2196F3',
-            'epic': '#9C27B0',
-            'legendary': '#FFD700'
-        };
-
-        // Stat colors
-        const statColors = {
-            war: '#B87333',
-            res: '#708090', 
-            vel: '#00E5FF',
-            acc: '#FFB300',
-            dis: '#7B1FA2',
-            ins: '#00C853'
-        };
-
-        // Initialize the application
-        function init() {
-            createParticles();
-            setupEventListeners();
-            updateCollectionStats();
-            renderCards();
-            
-            // Initialize audio on first user interaction
-            document.addEventListener('click', initAudio, { once: true });
-            
-            // Add keyboard listener for modal
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
-                    closeModal();
-                }
-            });
-        }
-
-        // Create floating particles
-        function createParticles() {
-            for (let i = 0; i < 20; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.animationDelay = Math.random() * 15 + 's';
-                particle.style.animationDuration = (12 + Math.random() * 6) + 's';
-                document.body.appendChild(particle);
-            }
-        }
-
-        // Setup event listeners
-        function setupEventListeners() {
-            // Search input
-            document.getElementById('searchInput').addEventListener('input', (e) => {
-                currentFilters.search = e.target.value.toLowerCase();
-                applyFilters();
-            });
-
-            // Filter pills
-            document.querySelectorAll('.filter-pill').forEach(pill => {
-                pill.addEventListener('click', () => {
-                    const filterType = pill.dataset.filter;
-                    const filterValue = pill.dataset.value;
-                    
-                    // Toggle filter
-                    if (filterValue === 'all') {
-                        currentFilters[filterType] = 'all';
-                        // Remove active from other pills of same type
-                        document.querySelectorAll(`.filter-pill[data-filter="${filterType}"]`).forEach(p => p.classList.remove('active'));
-                        pill.classList.add('active');
-                    } else {
-                        if (currentFilters[filterType] === filterValue) {
-                            currentFilters[filterType] = 'all';
-                            pill.classList.remove('active');
-                            document.querySelector(`.filter-pill[data-filter="${filterType}"][data-value="all"]`).classList.add('active');
-                        } else {
-                            currentFilters[filterType] = filterValue;
-                            // Remove active from other pills of same type
-                            document.querySelectorAll(`.filter-pill[data-filter="${filterType}"]`).forEach(p => p.classList.remove('active'));
-                            pill.classList.add('active');
-                        }
-                    }
-                    
-                    playSound(500, 0.04);
-                    applyFilters();
-                });
-            });
-
-            // Sort pills
-            document.querySelectorAll('.sort-pill').forEach(pill => {
-                pill.addEventListener('click', () => {
-                    const sortValue = pill.dataset.sort;
-                    currentSort = sortValue;
-                    
-                    // Update active sort
-                    document.querySelectorAll('.sort-pill').forEach(p => p.classList.remove('active'));
-                    pill.classList.add('active');
-                    
-                    playSound(500, 0.04);
-                    applyFilters();
-                });
-            });
-
-            // Point cap selection
-            document.querySelectorAll('.point-cap').forEach(cap => {
-                cap.addEventListener('click', () => {
-                    currentPointCap = parseInt(cap.dataset.cap);
-                    document.querySelectorAll('.point-cap').forEach(c => c.classList.remove('active'));
-                    cap.classList.add('active');
-                    updateArmyStats();
-                });
-            });
-        }
-
-        // Apply filters and sorting
-        function applyFilters() {
-            filteredUnits = allUnits.filter(unit => {
-                // Search filter
-                if (currentFilters.search) {
-                    const searchTerm = currentFilters.search;
-                    if (!unit.name.toLowerCase().includes(searchTerm) &&
-                        !unit.faction.toLowerCase().includes(searchTerm) &&
-                        !unit.role.toLowerCase().includes(searchTerm) &&
-                        !unit.abilities.toLowerCase().includes(searchTerm) &&
-                        !unit.ability_desc.toLowerCase().includes(searchTerm)) {
-                        return false;
-                    }
-                }
-                
-                // Faction filter
-                if (currentFilters.faction !== 'all' && unit.faction !== currentFilters.faction) {
-                    return false;
-                }
-                
-                // Role filter
-                if (currentFilters.role !== 'all' && unit.role !== currentFilters.role) {
-                    return false;
-                }
-                
-                // Rarity filter
-                if (currentFilters.rarity !== 'all' && unit.rarity !== currentFilters.rarity) {
-                    return false;
-                }
-                
-                return true;
-            });
-
-            // Apply sorting
-            filteredUnits.sort((a, b) => {
-                switch (currentSort) {
-                    case 'points':
-                        return b.points - a.points;
-                    case 'total':
-                        return b.total - a.total;
-                    case 'rarity':
-                        const rarityOrder = ['legendary', 'epic', 'rare', 'uncommon', 'common'];
-                        return rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity);
-                    case 'name':
-                    default:
-                        return a.name.localeCompare(b.name);
-                }
-            });
-
-            renderCards();
-        }
-
-        // Update collection statistics
-        function updateCollectionStats() {
-            const totalUnits = allUnits.length;
-            const legendaryUnits = allUnits.filter(unit => unit.rarity === 'legendary');
-            const totalValue = allUnits.reduce((sum, unit) => sum + unit.points, 0);
-            const completion = 100; // All units are available
-
-            document.getElementById('totalUnits').textContent = totalUnits;
-            document.getElementById('legendaryCount').textContent = legendaryUnits.length;
-            document.getElementById('completion').textContent = completion + '%';
-            document.getElementById('totalValue').textContent = totalValue.toLocaleString();
-        }
-
-        // Render unit cards
-        function renderCards() {
-            const gridContainer = document.getElementById('cardGrid');
-            
-            if (filteredUnits.length === 0) {
-                gridContainer.innerHTML = `
-                    <div class="empty-state" style="grid-column: 1 / -1;">
-                        <h2>No units match your search</h2>
-                        <p>Try adjusting your filters or search terms</p>
-                    </div>
-                `;
-                return;
-            }
-
-            gridContainer.innerHTML = '';
-
-            filteredUnits.forEach((unit, index) => {
-                const cardElement = createCardElement(unit, index);
-                gridContainer.appendChild(cardElement);
-            });
-        }
-
-        // Create individual card element
-        function createCardElement(unit, index) {
-            const card = document.createElement('div');
-            card.className = `unit-card ${unit.rarity}`;
-            
-            // Add legendary particles
-            let particlesHtml = '';
-            if (unit.rarity === 'legendary') {
-                for (let i = 0; i < 5; i++) {
-                    particlesHtml += `<div class="legendary-particle" style="left: ${Math.random() * 100}%; animation-delay: ${Math.random() * 3}s;"></div>`;
-                }
-            }
-
-            const factionColor = getFactionColor(unit.faction);
-            const headerStyle = `background: linear-gradient(135deg, ${factionColor} 0%, ${factionColor}80 100%)`;
-            const artStyle = `background: linear-gradient(135deg, ${factionColor}40 0%, ${factionColor}60 100%)`;
-
-            card.innerHTML = `
-                ${unit.rarity === 'legendary' ? `<div class="legendary-particles">${particlesHtml}</div>` : ''}
-                <div class="card-header" style="${headerStyle}">${unit.faction.replace(/-/g, ' ').toUpperCase()}</div>
-                <div class="card-art" style="${artStyle}">
-                    <div class="role-icon">${roleIcons[unit.role] || '⚔️'}</div>
-                </div>
-                <div class="unit-name">${unit.name}</div>
-                <div class="stats-section">
-                    ${createStatBar('WAR', unit.war, 10, 'war')}
-                    ${createStatBar('RES', unit.res, 10, 'res')}
-                    ${createStatBar('VEL', unit.vel, 10, 'vel')}
-                    ${createStatBar('ACC', unit.acc, 10, 'acc')}
-                    ${createStatBar('DIS', unit.dis, 10, 'dis')}
-                    ${createStatBar('INS', unit.ins, 10, 'ins')}
-                </div>
-                <div class="ability-section">
-                    <div class="ability-name">"${unit.abilities.split(',')[0]}"</div>
-                </div>
-                <div class="card-footer">
-                    <div class="rarity-badge" style="color: ${rarityColors[unit.rarity]}">
-                        ${unit.rarity.toUpperCase()}
-                    </div>
-                    <div class="point-cost">${unit.points} pts</div>
-                </div>
-                <div class="tooltip">${unit.name} · ${unit.faction.replace(/-/g, ' ')} · ${unit.points} pts</div>
-            `;
-
-            // Add hover sound effect
-            card.addEventListener('mouseenter', () => {
-                if (audioContext) playSound(600, 0.03, 0.05);
-            });
-
-            // Add click handler for expansion
-            card.addEventListener('click', () => {
-                if (audioContext) {
-                    // Satisfying snap sound
-                    playSound(400, 0.05);
-                    setTimeout(() => playSound(200, 0.05), 50);
-                }
-                openExpandedView(unit);
-            });
-
-            // Add staggered animation
-            card.style.animation = `cardEnter 0.5s ease forwards`;
-            card.style.animationDelay = `${index * 0.03}s`;
-
-            return card;
-        }
-
-        // Create stat bar HTML
-        function createStatBar(label, value, max, statType) {
-            const percentage = (value / max) * 100;
-            return `
-                <div class="stat-bar">
-                    <div class="stat-label-card">${label}</div>
-                    <div class="stat-visual">
-                        <div class="stat-fill ${statType}" style="width: ${percentage}%"></div>
-                    </div>
-                    <div class="stat-number">${value}</div>
-                </div>
-            `;
-        }
-
-        // Get faction color
-        function getFactionColor(faction) {
-            const factionColors = {
-                'iron-covenant': '#8A8A8A',
-                'swarm-of-xeth': '#4A148C',
-                'void-pharaohs': '#1A1A2E',
-                'emerald-tide': '#BF360C',
-                'celestial-order': '#2A2A3A',
-                'warp-touched': '#B71C1C',
-                'shadow-kin': '#1A237E',
-                'steel-legion': '#556B2F',
-                'bone-prophets': '#2A2020',
-                'apex-hunters': '#00695C'
-            };
-            return factionColors[faction] || '#666';
-        }
-
-        // Open expanded card view
-        function openExpandedView(unit) {
-            const modal = document.getElementById('modalOverlay');
-            const expandedCard = document.getElementById('expandedCard');
-            
-            const factionColor = getFactionColor(unit.faction);
-            expandedCard.className = `expanded-card ${unit.rarity} ${unit.faction}`;
-            expandedCard.style.setProperty('--faction-color', factionColor);
-            
-            // Create legendary particles
-            let legendaryParticlesHtml = '';
-            if (unit.rarity === 'legendary') {
-                for (let i = 0; i < 8; i++) {
-                    legendaryParticlesHtml += `<div class="legendary-modal-particle" style="left: ${Math.random() * 100}%; animation-delay: ${Math.random() * 4}s;"></div>`;
-                }
-            }
-
-            expandedCard.innerHTML = `
-                ${unit.rarity === 'legendary' ? `<div class="legendary-modal-particles">${legendaryParticlesHtml}</div>` : ''}
-                
-                <button class="close-button" onclick="closeModal()">✕</button>
-                
-                <div class="faction-gradient-bar" style="background: linear-gradient(90deg, ${factionColor}, ${factionColor}80);"></div>
-                
-                <div class="modal-header">
-                    <div class="faction-emblem" style="border-color: ${factionColor};">
-                        ${roleIcons[unit.role] || '⚔️'}
-                    </div>
-                    <div class="role-badge" style="border-color: ${factionColor}; color: ${factionColor};">
-                        ${unit.role.replace(/ /g, ' ')}
-                    </div>
-                    <div class="modal-unit-name">${unit.name}</div>
-                    <div class="modal-points" style="color: ${factionColor};">${unit.points} POINTS</div>
-                    <div class="modal-rarity ${unit.rarity}" style="color: ${rarityColors[unit.rarity]};">
-                        ${unit.rarity === 'legendary' ? '★★★ LEGENDARY ★★★' : '★★★ ' + unit.rarity.toUpperCase() + ' ★★★'}
-                    </div>
-                </div>
-                
-                <div class="stats-container">
-                    <div class="radar-section">
-                        <div class="modal-radar-chart">
-                            <canvas id="modalRadarChart" width="200" height="200"></canvas>
-                        </div>
-                    </div>
-                    
-                    <div class="stats-bars-section">
-                        ${createModalStatBar('WAR', unit.war, 10)}
-                        ${createModalStatBar('RES', unit.res, 10)}
-                        ${createModalStatBar('VEL', unit.vel, 10)}
-                        ${createModalStatBar('ACC', unit.acc, 10)}
-                        ${createModalStatBar('DIS', unit.dis, 10)}
-                        ${createModalStatBar('INS', unit.ins, 10)}
-                        
-                        <div class="stats-total">
-                            TOTAL: ${unit.total}/60
-                            <div class="total-progress-bar">
-                                <div class="total-progress-fill" style="width: ${(unit.total/60) * 100}%;"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="modal-section ability" style="--faction-color: ${factionColor};">
-                    <div class="modal-section-title">⚡ ABILITIES</div>
-                    <div class="ability-name-full" style="color: ${factionColor};">${unit.abilities}</div>
-                    <div class="ability-description">${unit.ability_desc}</div>
-                </div>
-                
-                <div class="modal-section">
-                    <div class="modal-section-title">🛡️ EQUIPMENT (${unit.equipment_slots || 3} SLOTS)</div>
-                    <div class="equipment-list">${formatEquipmentWithColors(unit.equipment)}</div>
-                </div>
-                
-                <div class="flavor-section">
-                    <div class="flavor-divider-top"></div>
-                    <div class="flavor-text">"${unit.flavor}"</div>
-                    <div class="flavor-divider-bottom"></div>
-                </div>
-                
-                <div class="modal-buttons" style="--faction-color: ${factionColor};">
-                    <button class="modal-button primary" onclick="addToArmy('${unit.name}')">Add to Army</button>
-                    <button class="modal-button" onclick="closeModal()">Close</button>
-                </div>
-            `;
-
-            modal.classList.add('active');
-
-            // Draw radar chart with delay for DOM rendering
-            setTimeout(() => drawModalRadarChart(unit), 100);
-            
-            // Animate stat bars
-            setTimeout(() => animateModalStatBars(), 200);
-        }
-
-        // Create modal stat bar
-        function createModalStatBar(label, value, max) {
-            const percentage = (value / max) * 100;
-            const statKey = label.toLowerCase();
-            
-            return `
-                <div class="modal-stat-bar">
-                    <div class="modal-stat-label ${statKey}">${label}</div>
-                    <div class="modal-stat-visual">
-                        <div class="modal-stat-fill ${statKey}" data-width="${percentage}" style="width: 0%;"></div>
-                    </div>
-                    <div class="modal-stat-number">${value}</div>
-                </div>
-            `;
-        }
-
-        // Format equipment with colored stat bonuses
-        function formatEquipmentWithColors(equipment) {
-            const statRegex = /\(\+(\d+)\s+(WAR|RES|VEL|ACC|DIS|INS)\)/gi;
-            
-            return equipment.split(',').map(item => {
-                const trimmed = item.trim();
-                return trimmed.replace(statRegex, (match, bonus, stat) => {
-                    const statKey = stat.toLowerCase();
-                    return `(<span class="stat-bonus ${statKey}">+${bonus} ${stat}</span>)`;
-                });
-            }).map(item => `<div class="equipment-item">• ${item}</div>`).join('');
-        }
-
-        // Animate modal stat bars
-        function animateModalStatBars() {
-            const statFills = document.querySelectorAll('.modal-stat-fill');
-            statFills.forEach((fill, index) => {
-                const targetWidth = fill.dataset.width + '%';
-                setTimeout(() => {
-                    fill.style.width = targetWidth;
-                }, index * 80);
-            });
-        }
-
-        // Draw modal radar chart
-        function drawModalRadarChart(unit) {
-            const canvas = document.getElementById('modalRadarChart');
-            if (!canvas) return;
-            
-            const ctx = canvas.getContext('2d');
-            const centerX = 100;
-            const centerY = 100;
-            const radius = 80;
-            
-            // Clear canvas
-            ctx.clearRect(0, 0, 200, 200);
-            
-            // Stats data
-            const stats = [
-                { label: 'WAR', value: unit.war, color: statColors.war },
-                { label: 'RES', value: unit.res, color: statColors.res },
-                { label: 'VEL', value: unit.vel, color: statColors.vel },
-                { label: 'ACC', value: unit.acc, color: statColors.acc },
-                { label: 'DIS', value: unit.dis, color: statColors.dis },
-                { label: 'INS', value: unit.ins, color: statColors.ins }
-            ];
-            
-            const factionColor = getFactionColor(unit.faction);
-            
-            // Draw concentric hexagonal grid (3 levels)
-            ctx.strokeStyle = '#222';
-            ctx.lineWidth = 1;
-            for (let level = 1; level <= 3; level++) {
-                const levelRadius = (radius / 3) * level;
-                ctx.beginPath();
-                for (let i = 0; i < 6; i++) {
-                    const angle = (i * Math.PI * 2) / 6 - Math.PI / 2;
-                    const x = centerX + Math.cos(angle) * levelRadius;
-                    const y = centerY + Math.sin(angle) * levelRadius;
-                    if (i === 0) ctx.moveTo(x, y);
-                    else ctx.lineTo(x, y);
-                }
-                ctx.closePath();
-                ctx.stroke();
-            }
-            
-            // Draw axes to vertices
-            ctx.strokeStyle = '#222';
-            for (let i = 0; i < 6; i++) {
-                ctx.beginPath();
-                const angle = (i * Math.PI * 2) / 6 - Math.PI / 2;
-                ctx.moveTo(centerX, centerY);
-                ctx.lineTo(centerX + Math.cos(angle) * radius, centerY + Math.sin(angle) * radius);
-                ctx.stroke();
-            }
-            
-            // Draw data polygon
-            const useGoldForLegendary = unit.rarity === 'legendary';
-            const fillColor = useGoldForLegendary ? '#FFD700' : factionColor;
-            
-            ctx.fillStyle = fillColor + '40'; // 25% opacity
-            ctx.strokeStyle = fillColor;
-            ctx.lineWidth = 2;
-            
-            // Add glow effect
-            ctx.shadowColor = fillColor;
-            ctx.shadowBlur = 8;
-            
-            ctx.beginPath();
-            for (let i = 0; i < stats.length; i++) {
-                const angle = (i * Math.PI * 2) / 6 - Math.PI / 2;
-                const value = stats[i].value / 10; // Normalize to 0-1
-                const x = centerX + Math.cos(angle) * radius * value;
-                const y = centerY + Math.sin(angle) * radius * value;
-                
-                if (i === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-            }
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-            
-            // Reset shadow
-            ctx.shadowColor = 'transparent';
-            ctx.shadowBlur = 0;
-            
-            // Draw stat labels at vertices
-            ctx.font = 'bold 11px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            
-            for (let i = 0; i < stats.length; i++) {
-                const stat = stats[i];
-                const angle = (i * Math.PI * 2) / 6 - Math.PI / 2;
-                const labelRadius = radius + 25;
-                const x = centerX + Math.cos(angle) * labelRadius;
-                const y = centerY + Math.sin(angle) * labelRadius;
-                
-                ctx.fillStyle = stat.color;
-                ctx.fillText(stat.label, x, y);
-            }
-        }
-
-        // Close modal
-        function closeModal(event) {
-            if (event && event.target !== event.currentTarget) return;
-            document.getElementById('modalOverlay').classList.remove('active');
-        }
-
-        // Toggle army builder
-        function toggleArmyBuilder() {
-            armyBuilderOpen = !armyBuilderOpen;
-            const armyBuilder = document.getElementById('armyBuilder');
-            armyBuilder.classList.toggle('active', armyBuilderOpen);
-        }
-
-        // Add unit to army
-        function addToArmy(unitName) {
-            const unit = allUnits.find(u => u.name === unitName);
-            if (!unit) return;
-
-            // Enforce same faction
-            if (selectedArmy.length > 0) {
-                const armyFaction = selectedArmy[0].faction;
-                if (unit.faction !== armyFaction) {
-                    alert('All units must be from the same faction! Current army faction: ' + armyFaction.replace(/-/g, ' ').toUpperCase());
-                    return;
-                }
-            }
-            
-            selectedArmy.push(unit);
-            updateArmyDisplay();
-            updateArmyStats();
-            closeModal();
-            
-            if (!armyBuilderOpen) toggleArmyBuilder();
-        }
-
-        // Update army display
-        function updateArmyDisplay() {
-            const container = document.getElementById('armyUnits');
-            container.innerHTML = '';
-            
-            selectedArmy.forEach((unit, index) => {
-                const armyCard = document.createElement('div');
-                armyCard.className = 'army-unit-card';
-                armyCard.innerHTML = `
-                    <div style="font-size: 24px;">${roleIcons[unit.role]}</div>
-                    <div style="font-size: 10px; text-align: center; margin-top: 5px;">${unit.name}</div>
-                    <div style="font-size: 10px; color: #FFB300;">${unit.points} pts</div>
-                `;
-                
-                armyCard.addEventListener('click', () => {
-                    selectedArmy.splice(index, 1);
-                    updateArmyDisplay();
-                    updateArmyStats();
-                });
-                
-                container.appendChild(armyCard);
-            });
-        }
-
-        // Update army statistics
-        function updateArmyStats() {
-            const totalPoints = selectedArmy.reduce((sum, unit) => sum + unit.points, 0);
-            const pointsElement = document.getElementById('armyPoints');
-            const validationElement = document.getElementById('armyValidation');
-            
-            pointsElement.textContent = `${totalPoints} / ${currentPointCap} PTS`;
-            
-            // Validation: 1 HQ + 2 Troops minimum + same faction
-            const hasHQ = selectedArmy.some(unit => unit.role === 'hq');
-            const troopsCount = selectedArmy.filter(unit => unit.role === 'troops').length;
-            const overLimit = totalPoints > currentPointCap;
-            const factions = [...new Set(selectedArmy.map(u => u.faction))];
-            const sameFaction = factions.length <= 1;
-            
-            if (overLimit) {
-                pointsElement.className = 'army-stat error';
-                validationElement.textContent = '⚠ OVER LIMIT';
-                validationElement.className = 'army-stat error';
-            } else if (!sameFaction) {
-                validationElement.textContent = '⚠ MIXED FACTIONS';
-                validationElement.className = 'army-stat error';
-                pointsElement.className = 'army-stat';
-            } else if (!hasHQ || troopsCount < 2) {
-                let needs = [];
-                if (!hasHQ) needs.push('1 HQ');
-                if (troopsCount < 2) needs.push((2 - troopsCount) + ' more Troops');
-                validationElement.textContent = '⚠ Need ' + needs.join(' + ');
-                validationElement.className = 'army-stat warning';
-                pointsElement.className = 'army-stat';
-            } else {
-                validationElement.textContent = '✓ VALID ARMY';
-                validationElement.className = 'army-stat';
-                pointsElement.className = 'army-stat';
-            }
-        }
-
-        // Export army
-        function exportArmy() {
-            const armyData = {
-                pointCap: currentPointCap,
-                totalPoints: selectedArmy.reduce((sum, unit) => sum + unit.points, 0),
-                faction: selectedArmy.length > 0 ? selectedArmy[0].faction : null,
-                units: selectedArmy.map(unit => ({
-                    name: unit.name,
-                    faction: unit.faction,
-                    role: unit.role,
-                    points: unit.points
-                }))
-            };
-            
-            const dataStr = JSON.stringify(armyData, null, 2);
-            const dataBlob = new Blob([dataStr], {type: 'application/json'});
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'chain-of-war-army.json';
-            link.click();
-            URL.revokeObjectURL(url);
-        }
-
-        // Clear army
-        function clearArmy() {
-            selectedArmy = [];
-            updateArmyDisplay();
-            updateArmyStats();
-        }
-
-        // Add card enter animation CSS
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes cardEnter {
-                0% {
-                    opacity: 0;
-                    transform: translateY(20px);
-                }
-                100% {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            }
-        `;
-        document.head.appendChild(style);
-
-        // Initialize the application
-        init();
+        
+        // Additional JavaScript for functionality would go here...
+        
     </script>
-<script src="nav.js"></script>
+
 </body>
 </html>

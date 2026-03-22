@@ -6,6 +6,52 @@
     <title>Chain of War - Admin Command</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+
+/* SHARED VISUAL STANDARDS */
+/* BASE */
+body { background: #050510 !important; box-shadow: inset 0 0 200px rgba(255,0,0,0.03); }
+
+/* TYPOGRAPHY */
+h1, h2, h3, .title, .header { font-family: 'Orbitron', system-ui, sans-serif !important; letter-spacing: 3px; }
+
+/* PANELS - glass morphism */
+.panel, .card, section, .container, .sidebar, [class*="panel"], [class*="card"], [class*="section"] {
+    background: rgba(255,255,255,0.03) !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    backdrop-filter: blur(8px);
+    border-radius: 12px !important;
+}
+
+/* STAT COLORS */
+.stat-war, [data-stat="war"] { color: #B87333 !important; }
+.stat-res, [data-stat="res"] { color: #708090 !important; }
+.stat-vel, [data-stat="vel"] { color: #00E5FF !important; }
+.stat-acc, [data-stat="acc"] { color: #FFB300 !important; }
+.stat-dis, [data-stat="dis"] { color: #7B1FA2 !important; }
+.stat-ins, [data-stat="ins"] { color: #00C853 !important; }
+
+/* BUTTONS */
+button, .btn, [class*="btn"], input[type="submit"] {
+    background: linear-gradient(135deg, #00E5FF, #0088FF) !important;
+    color: #000 !important;
+    border: none !important;
+    border-radius: 8px !important;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease !important;
+}
+button:hover, .btn:hover { box-shadow: 0 0 20px rgba(0,229,255,0.4) !important; transform: translateY(-1px); }
+
+/* INTERACTIVE */
+* { transition: color 0.2s, border-color 0.2s, box-shadow 0.2s, opacity 0.2s; }
+
+/* ADMIN SPECIFIC ANIMATIONS */
+@keyframes admin-pulse { 
+    0%,100% { opacity: 1; } 
+    50% { opacity: 0.7; } 
+}
         
         * {
             margin: 0;
@@ -74,8 +120,8 @@
         .main-title {
             font-size: 36px;
             font-weight: 900;
-            color: #00E5FF;
-            text-shadow: 0 0 20px #00E5FF, 0 0 40px #00E5FF;
+            color: #FF2D2D;
+            text-shadow: 0 0 30px rgba(255,45,45,0.4);
             margin-bottom: 10px;
             letter-spacing: 4px;
         }
@@ -97,7 +143,7 @@
             border-radius: 20px;
             font-size: 12px;
             font-weight: 700;
-            animation: pulse 2s infinite;
+            animation: admin-pulse 2s infinite;
             border: 2px solid rgba(255, 45, 45, 0.5);
         }
 
